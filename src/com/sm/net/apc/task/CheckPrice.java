@@ -56,9 +56,16 @@ public class CheckPrice implements Runnable {
 				}
 			});
 
-			if (status)
+			if (status) {
+				Platform.runLater(new Runnable() {
+
+					@Override
+					public void run() {
+						callback.setProductName(amazonProduct, listProduct.size());
+					}
+				});
 				checkPrice(amazonProduct);
-			else
+			} else
 				break;
 		}
 
@@ -69,6 +76,7 @@ public class CheckPrice implements Runnable {
 				callback.stopCheck();
 			}
 		});
+
 	}
 
 	private void checkPrice(AmazonProduct amazonProduct) {
@@ -103,10 +111,10 @@ public class CheckPrice implements Runnable {
 			addInDatabase(PriceStatus.DETECTED, id, price);
 			break;
 		case -1:
-			addInDatabase(PriceStatus.REDUCED, id, price);
+			addInDatabase(PriceStatus.INCREASED, id, price);
 			break;
 		case 1:
-			addInDatabase(PriceStatus.INCREASED, id, price);
+			addInDatabase(PriceStatus.REDUCED, id, price);
 			break;
 		}
 
