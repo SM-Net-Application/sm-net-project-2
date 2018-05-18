@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/h2-1.4.195.jar"/>
+	<classpathentry kind="lib" path="lib/sm-net-amazon-util-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/sm-net-simple-h2-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/sm-net-util-1.0.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

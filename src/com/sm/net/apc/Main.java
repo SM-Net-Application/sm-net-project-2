@@ -5,13 +5,10 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import com.sm.net.apc.model.AmazonPrice;
 import com.sm.net.apc.model.AmazonProduct;
-import com.sm.net.apc.task.CheckPrice;
 import com.sm.net.apc.view.MainView;
 import com.sm.net.simple.h2.H2DataTypes;
 import com.sm.net.simple.h2.OperationBuilder;
@@ -35,6 +32,9 @@ import javafx.stage.WindowEvent;
 public class Main extends Application {
 
 	public final File ICON = setIconApp();
+	public static final File DOWN = setDownImage();
+	public static final File UP = setUpImage();
+	public static final File PRICE = setPriceImage();
 
 	private ScheduledExecutorService executorService;
 
@@ -46,9 +46,27 @@ public class Main extends Application {
 		SimpleH2Database database = createDatabase();
 		buildDatabase(database);
 		loadMainView(primaryStage, database);
+	}
 
-		this.executorService = Executors.newScheduledThreadPool(1);
-		executorService.scheduleAtFixedRate(new CheckPrice(database), 0, 60, TimeUnit.MINUTES);
+	private static File setPriceImage() {
+		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
+				+ File.separatorChar + "price.png";
+
+		return new File(path);
+	}
+
+	private static File setUpImage() {
+		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
+				+ File.separatorChar + "up.png";
+
+		return new File(path);
+	}
+
+	private static File setDownImage() {
+		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
+				+ File.separatorChar + "down.png";
+
+		return new File(path);
 	}
 
 	private void loadMainView(Stage primaryStage, SimpleH2Database database) {
@@ -64,6 +82,7 @@ public class Main extends Application {
 
 			primaryStage.setTitle("Amazon PriceCheck 1.0");
 			primaryStage.getIcons().add(new Image(ICON.toURI().toString()));
+			primaryStage.setMaximized(true);
 
 			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
@@ -77,6 +96,7 @@ public class Main extends Application {
 
 			MainView controller = (MainView) fxmlLoader.getController();
 			controller.setDatabase(database);
+			controller.setExecutorService(this.executorService);
 			controller.init();
 
 			primaryStage.show();
@@ -99,9 +119,10 @@ public class Main extends Application {
 		SimpleH2Table priceCheck = new SimpleH2Table("price_check", schema, true);
 		SimpleH2Column creationDate = new SimpleH2Column("creation_date", H2DataTypes.DATE, true);
 		SimpleH2Column price = new SimpleH2Column("price", H2DataTypes.DECIMAL, true);
+		SimpleH2Column priceOld = new SimpleH2Column("price_old", H2DataTypes.DECIMAL, true);
 		SimpleH2Column idProduct = new SimpleH2Column("id_product", H2DataTypes.INT, true);
 		SimpleH2Column status = new SimpleH2Column("status", H2DataTypes.INT, true);
-		priceCheck.addColumn(id, creationDate, price, idProduct, status);
+		priceCheck.addColumn(id, creationDate, price, priceOld, idProduct, status);
 
 		database.createSchema(schema);
 		database.createTable(product);
@@ -157,6 +178,7 @@ public class Main extends Application {
 		selectionCriteria.setSelection("price_check", "id");
 		selectionCriteria.setSelection("price_check", "creation_date");
 		selectionCriteria.setSelection("price_check", "price");
+		selectionCriteria.setSelection("price_check", "price_old");
 		selectionCriteria.setSelection("price_check", "id_product");
 		selectionCriteria.setSelection("price_check", "status");
 		selectionCriteria.setConditionEquals("id_product", idProduct);
@@ -168,10 +190,11 @@ public class Main extends Application {
 				int id = resultSet.getInt("id");
 				Date creationData = resultSet.getDate("creation_date");
 				BigDecimal price = resultSet.getBigDecimal("price");
+				BigDecimal priceOld = resultSet.getBigDecimal("price_old");
 				int idProduct2 = resultSet.getInt("id_product");
 				int status = resultSet.getInt("status");
 
-				AmazonPrice amazonPrice = new AmazonPrice(id, creationData, price, idProduct2, status);
+				AmazonPrice amazonPrice = new AmazonPrice(id, creationData, price, priceOld, idProduct2, status);
 
 				list.add(amazonPrice);
 			}

@@ -5,7 +5,7 @@ import javafx.beans.property.StringProperty;
 
 public enum PriceStatus {
 
-	REDUCED(0, "INCREASED"), INCREASED(1, "REDUCED"), DETECTED(2, "DETECTED");
+	INCREASED(0, "INCREASED"), REDUCED(1, "REDUCED"), DETECTED(2, "DETECTED");
 
 	private Integer id;
 	private StringProperty name;
