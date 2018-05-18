@@ -62,12 +62,14 @@ public class MainView implements TaskCheckPrice {
 	private ScheduledExecutorService executorService;
 	private boolean status;
 	private CheckPrice checkPriceTask;
+	private int index;
 
 	@FXML
 	private void initialize() {
 
 		this.executorService = null;
 		this.status = false;
+		this.index = 0;
 
 		setImageButtonPlus();
 		setImageButtonStart();
@@ -259,6 +261,7 @@ public class MainView implements TaskCheckPrice {
 
 	@Override
 	public void startCheck() {
+		this.index = 0;
 		status = true;
 		setLabelCheckInProgress();
 		setImageButtonStop();
@@ -276,6 +279,12 @@ public class MainView implements TaskCheckPrice {
 		return status;
 	}
 
+	@Override
+	public void setProductName(AmazonProduct amazonProduct, int size) {
+		this.index += 1;
+		this.labelCheck.setText(this.index + "/" + size + " " + amazonProduct.getProductName().get());
+	}
+
 	public CheckPrice getCheckPriceTask() {
 		return checkPriceTask;
 	}
@@ -283,4 +292,5 @@ public class MainView implements TaskCheckPrice {
 	public void setCheckPriceTask(CheckPrice checkPriceTask) {
 		this.checkPriceTask = checkPriceTask;
 	}
+
 }
