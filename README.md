@@ -1,2 +1,2 @@
 # sm-net-project-2
-Amazon PriceCheck
+SM-Net Amazon PriceCheck
