@@ -29,7 +29,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-// Test
 public class Main extends Application {
 
 	public final File ICON = setIconApp();
