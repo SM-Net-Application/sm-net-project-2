@@ -1,5 +1,7 @@
 package com.sm.net.apc.model;
 
+import java.math.BigDecimal;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -15,13 +17,17 @@ public class AmazonProduct {
 	private StringProperty code;
 	private StringProperty productName;
 	private ObjectProperty<ImageView> imageUrl;
+	private IntegerProperty idList;
+	private ObjectProperty<BigDecimal> priceAlert;
 
-	public AmazonProduct(int id, String code, String productName, String imageUrl) {
+	public AmazonProduct(int id, String code, String productName, String imageUrl, int idList, BigDecimal priceAlert) {
 		super();
 		this.id = new SimpleIntegerProperty(id);
 		this.code = new SimpleStringProperty(code);
 		this.productName = new SimpleStringProperty(productName);
 		this.imageUrl = new SimpleObjectProperty<ImageView>(getImageView(imageUrl));
+		this.idList = new SimpleIntegerProperty(idList);
+		this.priceAlert = new SimpleObjectProperty<BigDecimal>(priceAlert);
 	}
 
 	private ImageView getImageView(String imageUrl) {
@@ -72,6 +78,22 @@ public class AmazonProduct {
 	@Override
 	public String toString() {
 		return getProductName().get();
+	}
+
+	public IntegerProperty getIdList() {
+		return idList;
+	}
+
+	public void setIdList(IntegerProperty idList) {
+		this.idList = idList;
+	}
+
+	public ObjectProperty<BigDecimal> getPriceAlert() {
+		return priceAlert;
+	}
+
+	public void setPriceAlert(ObjectProperty<BigDecimal> priceAlert) {
+		this.priceAlert = priceAlert;
 	}
 
 }

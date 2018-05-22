@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ScheduledExecutorService;
 
+import com.sm.net.apc.model.AmazonList;
 import com.sm.net.apc.model.AmazonPrice;
 import com.sm.net.apc.model.AmazonProduct;
 import com.sm.net.apc.view.MainView;
@@ -31,7 +32,7 @@ import javafx.stage.WindowEvent;
 
 public class Main extends Application {
 
-	public final File ICON = setIconApp();
+	public static final File ICON = setIconApp();
 	public static final File DOWN = setDownImage();
 	public static final File UP = setUpImage();
 	public static final File PRICE = setPriceImage();
@@ -97,6 +98,7 @@ public class Main extends Application {
 			MainView controller = (MainView) fxmlLoader.getController();
 			controller.setDatabase(database);
 			controller.setExecutorService(this.executorService);
+			controller.setMainViewStage(primaryStage);
 			controller.init();
 
 			primaryStage.show();
@@ -114,7 +116,9 @@ public class Main extends Application {
 		SimpleH2Column code = new SimpleH2Column("code", H2DataTypes.VARCHAR, true, 500);
 		SimpleH2Column productName = new SimpleH2Column("product_name", H2DataTypes.VARCHAR, true, 1000);
 		SimpleH2Column imageUrl = new SimpleH2Column("image_url", H2DataTypes.VARCHAR, true, 1000);
-		product.addColumn(id, code, productName, imageUrl);
+		SimpleH2Column idList = new SimpleH2Column("id_list", H2DataTypes.INT, true);
+		SimpleH2Column priceAlert = new SimpleH2Column("price_alert", H2DataTypes.DECIMAL, true);
+		product.addColumn(id, code, productName, imageUrl, idList, priceAlert);
 
 		SimpleH2Table priceCheck = new SimpleH2Table("price_check", schema, true);
 		SimpleH2Column creationDate = new SimpleH2Column("creation_date", H2DataTypes.DATE, true);
@@ -124,9 +128,14 @@ public class Main extends Application {
 		SimpleH2Column status = new SimpleH2Column("status", H2DataTypes.INT, true);
 		priceCheck.addColumn(id, creationDate, price, priceOld, idProduct, status);
 
+		SimpleH2Table list = new SimpleH2Table("list", schema, true);
+		SimpleH2Column name = new SimpleH2Column("name", H2DataTypes.VARCHAR, true, 1000);
+		list.addColumn(id, name);
+
 		database.createSchema(schema);
 		database.createTable(product);
 		database.createTable(priceCheck);
+		database.createTable(list);
 	}
 
 	private SimpleH2Database createDatabase() {
@@ -143,7 +152,7 @@ public class Main extends Application {
 		return new SimpleH2Database(folderFile, "amazonPriceCheck", "admin", "", true);
 	}
 
-	public static ObservableList<AmazonProduct> getListProduct(SimpleH2Database database) {
+	public static ObservableList<AmazonProduct> getListProduct(SimpleH2Database database, Integer idList) {
 
 		ObservableList<AmazonProduct> list = FXCollections.observableArrayList();
 
@@ -152,6 +161,11 @@ public class Main extends Application {
 		selectionCriteria.setSelection("product", "code");
 		selectionCriteria.setSelection("product", "product_name");
 		selectionCriteria.setSelection("product", "image_url");
+		selectionCriteria.setSelection("product", "id_list");
+		selectionCriteria.setSelection("product", "price_alert");
+
+		if (idList.intValue() > -2)
+			selectionCriteria.setConditionEquals("id_list", idList);
 
 		SimpleH2ResultSet selection = database.runSelection(selectionCriteria.buildSelection());
 		ResultSet resultSet = selection.getResultSet();
@@ -161,8 +175,10 @@ public class Main extends Application {
 				String code = resultSet.getString("code");
 				String productName = resultSet.getString("product_name");
 				String imageUrl = resultSet.getString("image_url");
+				int idListRecord = resultSet.getInt("id_list");
+				BigDecimal priceAlert = resultSet.getBigDecimal("price_alert");
 
-				list.add(new AmazonProduct(id, code, productName, imageUrl));
+				list.add(new AmazonProduct(id, code, productName, imageUrl, idListRecord, priceAlert));
 			}
 		} catch (SQLException e) {
 		}
@@ -183,7 +199,8 @@ public class Main extends Application {
 		selectionCriteria.setSelection("price_check", "status");
 		selectionCriteria.setConditionEquals("id_product", idProduct);
 
-		SimpleH2ResultSet selection = database.runSelection(selectionCriteria.buildSelection());
+		SimpleH2ResultSet selection = database
+				.runSelection(selectionCriteria.buildSelection() + " ORDER BY creation_date DESC, id DESC");
 		ResultSet resultSet = selection.getResultSet();
 		try {
 			while (resultSet.next()) {
@@ -204,7 +221,30 @@ public class Main extends Application {
 		return list;
 	}
 
-	private File setIconApp() {
+	public static ObservableList<AmazonList> getListList(SimpleH2Database database) {
+
+		ObservableList<AmazonList> list = FXCollections.observableArrayList();
+
+		OperationBuilder selectionCriteria = new OperationBuilder("apc", "list");
+		selectionCriteria.setSelection("list", "id");
+		selectionCriteria.setSelection("list", "name");
+
+		SimpleH2ResultSet selection = database.runSelection(selectionCriteria.buildSelection() + " ORDER BY name ASC");
+		ResultSet resultSet = selection.getResultSet();
+		try {
+			while (resultSet.next()) {
+				int id = resultSet.getInt("id");
+				String name = resultSet.getString("name");
+
+				list.add(new AmazonList(id, name));
+			}
+		} catch (SQLException e) {
+		}
+		selection.close();
+		return list;
+	}
+
+	private static File setIconApp() {
 
 		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
 				+ File.separatorChar + "icon.png";

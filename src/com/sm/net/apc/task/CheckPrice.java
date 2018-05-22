@@ -36,7 +36,7 @@ public class CheckPrice implements Runnable {
 	@Override
 	public void run() {
 
-		ObservableList<AmazonProduct> listProduct = Main.getListProduct(this.database);
+		ObservableList<AmazonProduct> listProduct = Main.getListProduct(this.database, -2);
 
 		Platform.runLater(new Runnable() {
 
@@ -57,6 +57,7 @@ public class CheckPrice implements Runnable {
 			});
 
 			if (status) {
+
 				Platform.runLater(new Runnable() {
 
 					@Override
@@ -64,7 +65,9 @@ public class CheckPrice implements Runnable {
 						callback.setProductName(amazonProduct, listProduct.size());
 					}
 				});
+
 				checkPrice(amazonProduct);
+
 			} else
 				break;
 		}
@@ -76,7 +79,6 @@ public class CheckPrice implements Runnable {
 				callback.stopCheck();
 			}
 		});
-
 	}
 
 	private void checkPrice(AmazonProduct amazonProduct) {

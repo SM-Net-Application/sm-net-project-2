@@ -2,17 +2,23 @@ package com.sm.net.apc.view;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Date;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.sm.net.amazon.util.Html;
 import com.sm.net.apc.Main;
+import com.sm.net.apc.enumeration.PriceStatus;
 import com.sm.net.apc.interfaces.TaskCheckPrice;
+import com.sm.net.apc.model.AmazonList;
 import com.sm.net.apc.model.AmazonPrice;
 import com.sm.net.apc.model.AmazonProduct;
 import com.sm.net.apc.task.CheckPrice;
@@ -21,14 +27,30 @@ import com.sm.net.simple.h2.SimpleH2Database;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.util.Callback;
 
 public class MainView implements TaskCheckPrice {
 
@@ -52,17 +74,33 @@ public class MainView implements TaskCheckPrice {
 	private TableColumn<AmazonPrice, BigDecimal> tableColumnPriceValue;
 	@FXML
 	private TableColumn<AmazonPrice, String> tableColumnPricePercentage;
+	@FXML
+	private TableColumn<AmazonPrice, Date> tableColumnPriceDate;
 
 	@FXML
 	private Label labelCheck;
 	@FXML
 	private Button buttonCheck;
+	@FXML
+	private ProgressBar progressBar;
+	@FXML
+	private Button buttonAddList;
+	@FXML
+	private Button buttonDeleteProduct;
+	@FXML
+	private Button buttonDeleteList;
+
+	@FXML
+	private ListView<AmazonList> listView;
 
 	private SimpleH2Database database;
 	private ScheduledExecutorService executorService;
 	private boolean status;
-	private CheckPrice checkPriceTask;
 	private int index;
+	private CheckPrice checkPriceService;
+	private Stage mainViewStage;
+
+	private int time = 60;
 
 	@FXML
 	private void initialize() {
@@ -70,6 +108,7 @@ public class MainView implements TaskCheckPrice {
 		this.executorService = null;
 		this.status = false;
 		this.index = 0;
+		this.checkPriceService = null;
 
 		setImageButtonPlus();
 		setImageButtonStart();
@@ -81,6 +120,7 @@ public class MainView implements TaskCheckPrice {
 		tableColumnPriceImage.setCellValueFactory(cellData -> cellData.getValue().getImageViewStatus());
 		tableColumnPriceValue.setCellValueFactory(cellData -> cellData.getValue().getPrice());
 		tableColumnPricePercentage.setCellValueFactory(cellData -> cellData.getValue().getPercentageString());
+		tableColumnPriceDate.setCellValueFactory(cellData -> cellData.getValue().getCreationDate());
 
 		tableColumnImage.setStyle("-fx-alignment: center; -fx-font: 15px System;");
 		tableColumnName.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
@@ -88,6 +128,20 @@ public class MainView implements TaskCheckPrice {
 		tableColumnPriceImage.setStyle("-fx-alignment: center; -fx-font: 15px System;");
 		tableColumnPriceValue.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		tableColumnPricePercentage.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+		tableColumnPriceDate.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+
+		progressBar.setStyle("-fx-font: 14px System;");
+
+		listView.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+		listView.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				if (newValue.intValue() > -1) {
+					loadListProduct();
+				}
+			}
+		});
 
 		tableViewProducts.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 
@@ -98,16 +152,167 @@ public class MainView implements TaskCheckPrice {
 			}
 		});
 
+		tableViewProducts.setRowFactory(tv -> {
+			TableRow<AmazonProduct> row = new TableRow<>();
+			row.setOnMouseClicked(event -> {
+				if (event.getClickCount() == 2 && !row.isEmpty()) {
+					AmazonProduct product = row.getItem();
+					createEditor(product);
+				}
+			});
+			return row;
+		});
+	}
+
+	public void init() {
+		loadListList();
+		loadListProduct();
+
+		checkPriceService = new CheckPrice(database, this);
+
+		this.executorService = Executors.newScheduledThreadPool(1);
+		executorService.scheduleAtFixedRate(checkPriceService, 1, time, TimeUnit.MINUTES);
+	}
+
+	public void buttonDeleteListOnClick() {
+
+		AmazonList list = listView.getSelectionModel().getSelectedItem();
+		if (list != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setTitle("Delete list");
+			alert.setHeaderText("Do you really want to delete it?");
+			alert.setContentText(list.getName().get());
+
+			Optional<ButtonType> result = alert.showAndWait();
+			if (result.get() == ButtonType.OK)
+				deleteList(list);
+		}
+
+	}
+
+	private void deleteList(AmazonList list) {
+
+		database.runOperation("DELETE FROM apc.list WHERE id=" + list.getId().intValue());
+		database.runOperation("UPDATE apc.product SET id_list=-1 WHERE id_list=" + list.getId().intValue());
+		loadListList();
+		loadListProduct();
+	}
+
+	private void createEditor(AmazonProduct product) {
+
+		try {
+
+			FXMLLoader fxmlLoader = new FXMLLoader();
+			fxmlLoader.setLocation(Main.class.getResource("view/ProductEditor.fxml"));
+
+			Scene scene = new Scene((AnchorPane) fxmlLoader.load());
+			Stage stage = new Stage();
+			stage.setScene(scene);
+
+			stage.setTitle("Amazon PriceCheck 1.0");
+			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+			stage.initOwner(mainViewStage);
+			stage.initModality(Modality.WINDOW_MODAL);
+
+			ProductEditor controller = (ProductEditor) fxmlLoader.getController();
+			controller.setDatabase(database);
+			controller.setProduct(product);
+			controller.setMainView(this);
+			controller.init();
+
+			stage.show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void buttonDeleteProductOnClick() {
+
+		AmazonProduct product = tableViewProducts.getSelectionModel().getSelectedItem();
+		if (product != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setTitle("Delete product");
+			alert.setHeaderText("Do you really want to delete it?");
+			alert.setContentText(product.getProductName().get());
+
+			Optional<ButtonType> result = alert.showAndWait();
+			if (result.get() == ButtonType.OK)
+				deleteProduct(product);
+		}
+	}
+
+	private void deleteProduct(AmazonProduct product) {
+
+		database.runOperation("DELETE FROM apc.product WHERE id=" + product.getId().intValue());
+		database.runOperation("DELETE FROM apc.price_check WHERE id_product=" + product.getId().intValue());
+		loadListProduct();
+	}
+
+	public void buttonNewOnClick() {
+
+		Dialog<String> dialog = new Dialog<>();
+		dialog.setTitle("Amazon PriceCheck 1.0");
+		dialog.setHeaderText("List-Name:");
+
+		Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+		stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+
+		ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+		HBox hbox = new HBox();
+
+		TextField listName = new TextField();
+		listName.setStyle("-fx-font: normal 15 System;");
+
+		hbox.getChildren().add(listName);
+
+		dialog.getDialogPane().setContent(hbox);
+		dialog.setResultConverter(new Callback<ButtonType, String>() {
+
+			@Override
+			public String call(ButtonType param) {
+				if (param.getButtonData().compareTo(ButtonData.OK_DONE) == 0) {
+					return listName.getText();
+				} else {
+					return null;
+				}
+			}
+		});
+
+		Optional<String> result = dialog.showAndWait();
+
+		if (result.isPresent()) {
+			String list = result.get();
+
+			addNewList(list);
+		}
+	}
+
+	private void addNewList(String list) {
+
+		OperationBuilder op = new OperationBuilder("apc", "list");
+		op.setColumnValue("name", list);
+		database.runOperation(op.buildInsert());
+
+		loadListList();
+		loadListProduct();
+	}
+
+	private void loadListList() {
+
+		ObservableList<AmazonList> list = Main.getListList(this.database);
+		list.add(0, new AmazonList(-1, "Wishlist"));
+
+		this.listView.setItems(list);
+		this.listView.getSelectionModel().selectFirst();
 	}
 
 	private void setLabelCheck(Integer min) {
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
-		this.labelCheck.setText(dtf.format(getNextCheck(min)));
-	}
-
-	private void setLabelCheckInProgress() {
-		this.labelCheck.setText("Check in progress...");
+		this.labelCheck.setText("Next: " + dtf.format(getNextCheck(min)));
 	}
 
 	private Instant getNextCheck(Integer min) {
@@ -164,15 +369,6 @@ public class MainView implements TaskCheckPrice {
 			tableViewPrice.setItems(null);
 	}
 
-	public void init() {
-		loadListProduct();
-
-		checkPriceTask = new CheckPrice(database, this);
-
-		this.executorService = Executors.newScheduledThreadPool(1);
-		executorService.scheduleAtFixedRate(checkPriceTask, 1, 60, TimeUnit.MINUTES);
-	}
-
 	public void buttonAddOnClick() {
 
 		String link = textFieldLink.getText();
@@ -192,7 +388,7 @@ public class MainView implements TaskCheckPrice {
 	}
 
 	private void startManualCheck() {
-		executorService.execute(new Thread(checkPriceTask));
+		executorService.execute(checkPriceService);
 	}
 
 	private void checkProduct(String productCode) {
@@ -213,34 +409,73 @@ public class MainView implements TaskCheckPrice {
 			imageUrl = com.sm.net.util.Html.getSubsourceCode(imageUrlTag, com.sm.net.util.Html.attrSrcStart,
 					com.sm.net.util.Html.backslash);
 
-			addProduct(productCode, com.sm.net.util.Html.encodingForeignChars(productTitle), imageUrl);
+			String price = "";
+
+			price = com.sm.net.util.Html.getSubsourceCode(sourceCode, Html.salePriceStart,
+					com.sm.net.util.Html.tagSpanEnd);
+
+			if (price.isEmpty())
+				price = com.sm.net.util.Html.getSubsourceCode(sourceCode, Html.ourPriceStart,
+						com.sm.net.util.Html.tagSpanEnd);
+
+			List<Integer> indexes = addProduct(productCode, com.sm.net.util.Html.encodingForeignChars(productTitle),
+					imageUrl);
+			addPrice(indexes, price);
 		}
 	}
 
-	private void addProduct(String productCode, String productTitle, String imageUrl) {
+	private void addPrice(List<Integer> indexes, String price) {
+
+		if (!indexes.isEmpty()) {
+			if (indexes.size() == 1) {
+				OperationBuilder op = new OperationBuilder("apc", "price_check");
+				op.setColumnValue("creation_date", Instant.now());
+				op.setColumnValue("price", new BigDecimal(price));
+				op.setColumnValue("price_old", new BigDecimal(price));
+				op.setColumnValue("id_product", indexes.get(0));
+				op.setColumnValue("status", PriceStatus.DETECTED.getId());
+
+				database.runOperation(op.buildInsert());
+			}
+		}
+	}
+
+	private List<Integer> addProduct(String productCode, String productTitle, String imageUrl) {
 
 		if (!productCode.isEmpty() && !productTitle.isEmpty()) {
 
 			productTitle = productTitle.replace("'", "");
 
+			AmazonList list = listView.getSelectionModel().getSelectedItem();
+
 			OperationBuilder op = new OperationBuilder("apc", "product");
 			op.setColumnValue("code", productCode);
 			op.setColumnValue("product_name", productTitle);
+			op.setColumnValue("id_list", list.getId().get());
+			op.setColumnValue("price_alert", BigDecimal.ZERO);
 
 			if (imageUrl.isEmpty())
 				op.setColumnValue("image_url", "");
 			else
 				op.setColumnValue("image_url", imageUrl);
 
-			database.runOperation(op.buildInsert());
+			List<Integer> indexes = database.runInsert(op.buildInsert());
 
 			textFieldLink.setText("");
 			loadListProduct();
+
+			return indexes;
 		}
+
+		return null;
 	}
 
-	private void loadListProduct() {
-		tableViewProducts.setItems(Main.getListProduct(this.database));
+	public void loadListProduct() {
+		AmazonList list = this.listView.getSelectionModel().getSelectedItem();
+		if (list != null) {
+			tableViewProducts.setItems(Main.getListProduct(this.database, list.getId().get()));
+			tableViewPrice.setItems(null);
+		}
 	}
 
 	public SimpleH2Database getDatabase() {
@@ -262,16 +497,17 @@ public class MainView implements TaskCheckPrice {
 	@Override
 	public void startCheck() {
 		this.index = 0;
-		status = true;
-		setLabelCheckInProgress();
+		this.status = true;
+		this.progressBar.setProgress(0);
 		setImageButtonStop();
 	}
 
 	@Override
 	public void stopCheck() {
-		status = false;
-		setLabelCheck(60);
+		this.status = false;
+		setLabelCheck(time);
 		setImageButtonStart();
+		this.progressBar.setProgress(0);
 	}
 
 	@Override
@@ -283,14 +519,19 @@ public class MainView implements TaskCheckPrice {
 	public void setProductName(AmazonProduct amazonProduct, int size) {
 		this.index += 1;
 		this.labelCheck.setText(this.index + "/" + size + " " + amazonProduct.getProductName().get());
+		this.progressBar.setProgress(getProgress(size));
 	}
 
-	public CheckPrice getCheckPriceTask() {
-		return checkPriceTask;
+	private double getProgress(int size) {
+		return BigDecimal.valueOf(this.index).divide(BigDecimal.valueOf(size), 2, RoundingMode.HALF_UP).doubleValue();
 	}
 
-	public void setCheckPriceTask(CheckPrice checkPriceTask) {
-		this.checkPriceTask = checkPriceTask;
+	public Stage getMainViewStage() {
+		return mainViewStage;
+	}
+
+	public void setMainViewStage(Stage mainViewStage) {
+		this.mainViewStage = mainViewStage;
 	}
 
 }
