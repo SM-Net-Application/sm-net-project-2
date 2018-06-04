@@ -179,6 +179,15 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
+                  <HBox alignment="TOP_RIGHT">
+                     <children>
+                        <Button fx:id="buttonSettings" mnemonicParsing="false" onAction="#buttonSettingsOnClick" text="Settings">
+                           <HBox.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                  </HBox>
                </children>
             </VBox>
          </children>

@@ -89,6 +89,8 @@ public class MainView implements TaskCheckPrice {
 	private Button buttonDeleteProduct;
 	@FXML
 	private Button buttonDeleteList;
+	@FXML
+	private Button buttonSettings;
 
 	@FXML
 	private ListView<AmazonList> listView;
@@ -172,6 +174,33 @@ public class MainView implements TaskCheckPrice {
 
 		this.executorService = Executors.newScheduledThreadPool(1);
 		executorService.scheduleAtFixedRate(checkPriceService, 1, time, TimeUnit.MINUTES);
+	}
+
+	public void buttonSettingsOnClick() {
+
+		try {
+
+			FXMLLoader fxmlLoader = new FXMLLoader();
+			fxmlLoader.setLocation(Main.class.getResource("view/Settings.fxml"));
+
+			Scene scene = new Scene((AnchorPane) fxmlLoader.load());
+			Stage stage = new Stage();
+			stage.setScene(scene);
+
+			stage.setTitle("Amazon PriceCheck 1.0");
+			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+			stage.initOwner(mainViewStage);
+			stage.initModality(Modality.WINDOW_MODAL);
+			stage.setResizable(false);
+
+			Settings controller = (Settings) fxmlLoader.getController();
+			controller.init();
+
+			stage.show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public void buttonDeleteListOnClick() {
