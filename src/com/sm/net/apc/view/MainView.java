@@ -511,6 +511,33 @@ public class MainView implements TaskCheckPrice {
 	}
 
 	@Override
+	public void showAlert(AmazonProduct amazonProduct, BigDecimal newPrice) {
+
+		try {
+
+			FXMLLoader fxmlLoader = new FXMLLoader();
+			fxmlLoader.setLocation(Main.class.getResource("view/Alert.fxml"));
+
+			Scene scene = new Scene((AnchorPane) fxmlLoader.load());
+			Stage stage = new Stage();
+			stage.setScene(scene);
+
+			stage.setTitle("Price alarm");
+			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+
+			com.sm.net.apc.view.Alert controller = (com.sm.net.apc.view.Alert) fxmlLoader.getController();
+			controller.setDatabase(database);
+			controller.setProduct(amazonProduct);
+			controller.setNewPrice(newPrice);
+			controller.init();
+
+			stage.show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
 	public boolean getStatus() {
 		return status;
 	}

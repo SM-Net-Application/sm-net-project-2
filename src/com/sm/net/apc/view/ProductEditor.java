@@ -1,5 +1,7 @@
 package com.sm.net.apc.view;
 
+import java.math.BigDecimal;
+
 import com.sm.net.apc.Main;
 import com.sm.net.apc.model.AmazonList;
 import com.sm.net.apc.model.AmazonProduct;
@@ -24,10 +26,13 @@ public class ProductEditor {
 	private TextField textFieldName;
 	@FXML
 	private ComboBox<AmazonList> comboBoxList;
+	@FXML
+	private TextField textFieldAlert;
 
 	private SimpleH2Database database;
 	private AmazonProduct product;
 	private String bufferName;
+	private String bufferAlert;
 	private MainView mainView;
 
 	@FXML
@@ -37,6 +42,7 @@ public class ProductEditor {
 		this.textFieldID.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.textFieldName.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.comboBoxList.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+		this.textFieldAlert.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 
 		this.textFieldName.focusedProperty().addListener(new ChangeListener<Boolean>() {
 
@@ -53,6 +59,35 @@ public class ProductEditor {
 
 						database.runOperation(ob.buildUpdate());
 						mainView.loadListProduct();
+					}
+				}
+			}
+		});
+
+		this.textFieldAlert.focusedProperty().addListener(new ChangeListener<Boolean>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				if (newValue.booleanValue()) {
+					bufferAlert = textFieldAlert.getText();
+				} else {
+					String newName = textFieldAlert.getText();
+					if (!newName.isEmpty() && newName.compareTo(bufferAlert) != 0) {
+
+						try {
+							BigDecimal priceAlert = new BigDecimal(newName.replaceAll(",", "."));
+
+							OperationBuilder ob = new OperationBuilder("apc", "product");
+							ob.setColumnValue("price_alert", priceAlert);
+							ob.setConditionEquals("id", product.getId().get());
+
+							database.runOperation(ob.buildUpdate());
+							mainView.loadListProduct();
+						} catch (Exception e) {
+							textFieldAlert.setText(bufferAlert);
+						}
+					} else {
+						textFieldAlert.setText(bufferAlert);
 					}
 				}
 			}
@@ -90,6 +125,7 @@ public class ProductEditor {
 		imageView.setImage(this.product.getImageUrl().get().getImage());
 		textFieldID.setText(this.product.getCode().get());
 		textFieldName.setText(this.product.getProductName().get());
+		textFieldAlert.setText(this.product.getPriceAlert().get().toString());
 		setComboBox();
 	}
 

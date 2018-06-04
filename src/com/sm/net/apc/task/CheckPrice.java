@@ -100,38 +100,53 @@ public class CheckPrice implements Runnable {
 						com.sm.net.util.Html.tagSpanEnd);
 
 			if (!price.isEmpty())
-				addPrice(amazonProduct.getId().get(), price.replaceAll(",", "."));
+				addPrice(amazonProduct, price.replaceAll(",", "."));
 		}
 	}
 
-	private void addPrice(Integer id, String price) {
+	private void addPrice(AmazonProduct product, String price) {
+
+		int id = product.getId().get();
 
 		int diff = isDifferentPrice(id, price);
 
 		switch (diff) {
 		case -2:
-			addInDatabase(PriceStatus.DETECTED, id, price);
+			addInDatabase(product, PriceStatus.DETECTED, id, price, product.getPriceAlert().get());
 			break;
 		case -1:
-			addInDatabase(PriceStatus.INCREASED, id, price);
+			addInDatabase(product, PriceStatus.INCREASED, id, price, product.getPriceAlert().get());
 			break;
 		case 1:
-			addInDatabase(PriceStatus.REDUCED, id, price);
+			addInDatabase(product, PriceStatus.REDUCED, id, price, product.getPriceAlert().get());
 			break;
 		}
 
 	}
 
-	private void addInDatabase(PriceStatus priceStatus, Integer id, String price) {
+	private void addInDatabase(AmazonProduct amazonProduct, PriceStatus priceStatus, Integer id, String price,
+			BigDecimal alertPrice) {
+
+		BigDecimal newPrice = new BigDecimal(price);
 
 		OperationBuilder op = new OperationBuilder("apc", "price_check");
 		op.setColumnValue("creation_date", Instant.now());
-		op.setColumnValue("price", new BigDecimal(price));
+		op.setColumnValue("price", newPrice);
 		op.setColumnValue("price_old", this.priceTemp);
 		op.setColumnValue("id_product", id);
 		op.setColumnValue("status", priceStatus.getId());
 
 		database.runOperation(op.buildInsert());
+
+		if (!(newPrice.compareTo(alertPrice) > 0)) {
+			Platform.runLater(new Runnable() {
+
+				@Override
+				public void run() {
+					callback.showAlert(amazonProduct, newPrice);
+				}
+			});
+		}
 	}
 
 	private int isDifferentPrice(Integer id, String price) {
