@@ -111,6 +111,10 @@ public class MainView implements TaskCheckPrice {
 		this.checkPriceService = null;
 
 		setImageButtonPlus();
+		setImageButtonListPlus();
+		setImageButtonListMinus();
+		setImageButtonProductMinus();
+		setImageButtonSettings();
 		setImageButtonStop();
 		setLabelCheck(1);
 
@@ -170,10 +174,6 @@ public class MainView implements TaskCheckPrice {
 
 		checkPriceService = new CheckPrice(database, this);
 		runService();
-
-		// this.executorService = Executors.newScheduledThreadPool(1);
-		// executorService.scheduleAtFixedRate(checkPriceService, 1, time,
-		// TimeUnit.MINUTES);
 	}
 
 	public void buttonSettingsOnClick() {
@@ -344,7 +344,7 @@ public class MainView implements TaskCheckPrice {
 	private void setLabelCheck(Integer min) {
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
-		this.labelCheck.setText("Next verification at " + dtf.format(getNextCheck(min)));
+		this.labelCheck.setText("Next check at " + dtf.format(getNextCheck(min)));
 	}
 
 	private Instant getNextCheck(Integer min) {
@@ -367,6 +367,19 @@ public class MainView implements TaskCheckPrice {
 		this.buttonCheck.setGraphic(imageView);
 	}
 
+	private void setImageButtonSettings() {
+
+		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
+				+ File.separatorChar + "settings.png";
+
+		ImageView imageView = new ImageView(new Image(new File(path).toURI().toString()));
+
+		imageView.setFitHeight(50);
+		imageView.setFitWidth(50);
+
+		this.buttonSettings.setGraphic(imageView);
+	}
+
 	private void setImageButtonStop() {
 
 		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
@@ -380,6 +393,19 @@ public class MainView implements TaskCheckPrice {
 		this.buttonCheck.setGraphic(imageView);
 	}
 
+	private void setImageButtonProductMinus() {
+
+		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
+				+ File.separatorChar + "amazon-minus.png";
+
+		ImageView imageView = new ImageView(new Image(new File(path).toURI().toString()));
+
+		imageView.setFitHeight(50);
+		imageView.setFitWidth(50);
+
+		this.buttonDeleteProduct.setGraphic(imageView);
+	}
+
 	private void setImageButtonPlus() {
 
 		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
@@ -391,6 +417,32 @@ public class MainView implements TaskCheckPrice {
 		imageView.setFitWidth(50);
 
 		this.buttonAdd.setGraphic(imageView);
+	}
+
+	private void setImageButtonListPlus() {
+
+		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
+				+ File.separatorChar + "list-plus.png";
+
+		ImageView imageView = new ImageView(new Image(new File(path).toURI().toString()));
+
+		imageView.setFitHeight(50);
+		imageView.setFitWidth(50);
+
+		this.buttonAddList.setGraphic(imageView);
+	}
+
+	private void setImageButtonListMinus() {
+
+		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "images"
+				+ File.separatorChar + "list-minus.png";
+
+		ImageView imageView = new ImageView(new Image(new File(path).toURI().toString()));
+
+		imageView.setFitHeight(50);
+		imageView.setFitWidth(50);
+
+		this.buttonDeleteList.setGraphic(imageView);
 	}
 
 	protected void loadPrice() {
