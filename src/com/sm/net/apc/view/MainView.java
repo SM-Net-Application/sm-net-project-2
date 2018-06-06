@@ -102,8 +102,6 @@ public class MainView implements TaskCheckPrice {
 	private CheckPrice checkPriceService;
 	private Stage mainViewStage;
 
-	private int time = 60;
-
 	@FXML
 	private void initialize() {
 
@@ -113,7 +111,7 @@ public class MainView implements TaskCheckPrice {
 		this.checkPriceService = null;
 
 		setImageButtonPlus();
-		setImageButtonStart();
+		setImageButtonStop();
 		setLabelCheck(1);
 
 		tableColumnImage.setCellValueFactory(cellData -> cellData.getValue().getImageUrl());
@@ -171,9 +169,11 @@ public class MainView implements TaskCheckPrice {
 		loadListProduct();
 
 		checkPriceService = new CheckPrice(database, this);
+		runService();
 
-		this.executorService = Executors.newScheduledThreadPool(1);
-		executorService.scheduleAtFixedRate(checkPriceService, 1, time, TimeUnit.MINUTES);
+		// this.executorService = Executors.newScheduledThreadPool(1);
+		// executorService.scheduleAtFixedRate(checkPriceService, 1, time,
+		// TimeUnit.MINUTES);
 	}
 
 	public void buttonSettingsOnClick() {
@@ -194,6 +194,9 @@ public class MainView implements TaskCheckPrice {
 			stage.setResizable(false);
 
 			Settings controller = (Settings) fxmlLoader.getController();
+			controller.setStage(stage);
+			controller.setDatabase(database);
+			controller.setProductSize(tableViewProducts.getItems().size());
 			controller.init();
 
 			stage.show();
@@ -340,8 +343,8 @@ public class MainView implements TaskCheckPrice {
 
 	private void setLabelCheck(Integer min) {
 
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
-		this.labelCheck.setText("Next: " + dtf.format(getNextCheck(min)));
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
+		this.labelCheck.setText("Next verification at " + dtf.format(getNextCheck(min)));
 	}
 
 	private Instant getNextCheck(Integer min) {
@@ -411,13 +414,9 @@ public class MainView implements TaskCheckPrice {
 	public void buttonCheckOnClick() {
 
 		if (status)
-			status = false;
+			shutdownService();
 		else
-			startManualCheck();
-	}
-
-	private void startManualCheck() {
-		executorService.execute(checkPriceService);
+			runService();
 	}
 
 	private void checkProduct(String productCode) {
@@ -459,8 +458,8 @@ public class MainView implements TaskCheckPrice {
 			if (indexes.size() == 1) {
 				OperationBuilder op = new OperationBuilder("apc", "price_check");
 				op.setColumnValue("creation_date", Instant.now());
-				op.setColumnValue("price", new BigDecimal(price));
-				op.setColumnValue("price_old", new BigDecimal(price));
+				op.setColumnValue("price", new BigDecimal(price.replace(",", ".")));
+				op.setColumnValue("price_old", new BigDecimal(price.replace(",", ".")));
 				op.setColumnValue("id_product", indexes.get(0));
 				op.setColumnValue("status", PriceStatus.DETECTED.getId());
 
@@ -504,6 +503,41 @@ public class MainView implements TaskCheckPrice {
 		if (list != null) {
 			tableViewProducts.setItems(Main.getListProduct(this.database, list.getId().get()));
 			tableViewPrice.setItems(null);
+			updateTime(Main.getListProduct(database, -2).size());
+		}
+	}
+
+	private void updateTime(int size) {
+
+		Integer atLeastTime = new Integer(size * 2);
+		String minString = Main.min.getValue().get();
+		if (atLeastTime.compareTo(new Integer(minString)) == 1) {
+			String ext = Main.ext.getValue().get();
+			Main.updateSettings(database, ext, atLeastTime.toString());
+			reloadService();
+		}
+	}
+
+	private void reloadService() {
+		shutdownService();
+		runService();
+	}
+
+	private void runService() {
+		this.executorService = Executors.newScheduledThreadPool(1);
+		executorService.scheduleAtFixedRate(checkPriceService, 1, new Integer(Main.min.getValue().get()).intValue(),
+				TimeUnit.MINUTES);
+		this.status = true;
+		setImageButtonStop();
+		setLabelCheck(1);
+	}
+
+	private void shutdownService() {
+		if (executorService != null) {
+			executorService.shutdown();
+			this.status = false;
+			setImageButtonStart();
+			this.labelCheck.setText("Stopped...");
 		}
 	}
 
@@ -526,16 +560,12 @@ public class MainView implements TaskCheckPrice {
 	@Override
 	public void startCheck() {
 		this.index = 0;
-		this.status = true;
 		this.progressBar.setProgress(0);
-		setImageButtonStop();
 	}
 
 	@Override
 	public void stopCheck() {
-		this.status = false;
-		setLabelCheck(time);
-		setImageButtonStart();
+		setLabelCheck(new Integer(Main.min.getValue().get()));
 		this.progressBar.setProgress(0);
 	}
 

@@ -9,8 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="com.sm.net.apc.view.Settings">
+<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sm.net.apc.view.Settings">
    <children>
       <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -62,6 +61,30 @@
                   </Label>
                </children>
             </HBox>
+            <HBox alignment="TOP_CENTER">
+               <children>
+                  <Label fx:id="labelProducts" maxHeight="1.7976931348623157E308" text="xx Products">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <HBox alignment="TOP_CENTER">
+               <children>
+                  <Label fx:id="labelTime" maxHeight="1.7976931348623157E308" text="At least xx minutes">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
             <HBox alignment="CENTER">
                <children>
                   <Button fx:id="buttonSave" mnemonicParsing="false" onAction="#buttonSaveOnClick" text="Save">
@@ -73,6 +96,9 @@
                      </HBox.margin>
                   </Button>
                </children>
+               <VBox.margin>
+                  <Insets top="25.0" />
+               </VBox.margin>
             </HBox>
          </children>
       </VBox>

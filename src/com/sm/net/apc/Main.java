@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.sm.net.apc.model.AmazonList;
 import com.sm.net.apc.model.AmazonPrice;
 import com.sm.net.apc.model.AmazonProduct;
+import com.sm.net.apc.model.Setting;
 import com.sm.net.apc.view.MainView;
 import com.sm.net.simple.h2.H2DataTypes;
 import com.sm.net.simple.h2.OperationBuilder;
@@ -37,6 +38,9 @@ public class Main extends Application {
 	public static final File UP = setUpImage();
 	public static final File PRICE = setPriceImage();
 
+	public static Setting ext = null;
+	public static Setting min = null;
+
 	private ScheduledExecutorService executorService;
 
 	@Override
@@ -46,6 +50,7 @@ public class Main extends Application {
 
 		SimpleH2Database database = createDatabase();
 		buildDatabase(database);
+		loadSettings(database);
 		loadMainView(primaryStage, database);
 	}
 
@@ -107,6 +112,77 @@ public class Main extends Application {
 		}
 	}
 
+	public static void loadSettings(SimpleH2Database database) {
+
+		ObservableList<Setting> settings = getSettings(database);
+
+		if (settings.size() > 0) {
+
+			for (Setting setting : settings) {
+				switch (setting.getName().get()) {
+				case "ext":
+					Main.ext = setting;
+					break;
+				case "min":
+					Main.min = setting;
+					break;
+				default:
+					break;
+				}
+			}
+
+		} else {
+			saveDefaultSettings(database);
+			loadSettings(database);
+		}
+	}
+
+	public static void updateSettings(SimpleH2Database database, String ext, String min) {
+		updateSettingsExt(database, ext);
+		updateSettingsMin(database, min);
+		loadSettings(database);
+	}
+
+	private static void updateSettingsExt(SimpleH2Database database, String ext) {
+
+		OperationBuilder op = new OperationBuilder("apc", "settings");
+		op.setColumnValue("value", ext);
+		op.setConditionEquals("id", Main.ext.getId().get());
+
+		database.runOperation(op.buildUpdate());
+	}
+
+	private static void updateSettingsMin(SimpleH2Database database, String min) {
+
+		OperationBuilder op = new OperationBuilder("apc", "settings");
+		op.setColumnValue("value", min);
+		op.setConditionEquals("id", Main.min.getId().get());
+
+		database.runOperation(op.buildUpdate());
+	}
+
+	public static void saveDefaultSettings(SimpleH2Database database) {
+		saveDefaultSettingsExt(database);
+		saveDefaultSettingsMin(database);
+	}
+
+	private static void saveDefaultSettingsMin(SimpleH2Database database) {
+		OperationBuilder op = new OperationBuilder("apc", "settings");
+		op.setColumnValue("name", "min");
+		op.setColumnValue("value", "60");
+
+		database.runOperation(op.buildInsert());
+	}
+
+	private static void saveDefaultSettingsExt(SimpleH2Database database) {
+
+		OperationBuilder op = new OperationBuilder("apc", "settings");
+		op.setColumnValue("name", "ext");
+		op.setColumnValue("value", "de");
+
+		database.runOperation(op.buildInsert());
+	}
+
 	private void buildDatabase(SimpleH2Database database) {
 
 		SimpleH2Schema schema = new SimpleH2Schema("apc", true);
@@ -132,10 +208,16 @@ public class Main extends Application {
 		SimpleH2Column name = new SimpleH2Column("name", H2DataTypes.VARCHAR, true, 1000);
 		list.addColumn(id, name);
 
+		SimpleH2Table settings = new SimpleH2Table("settings", schema, true);
+		SimpleH2Column settingName = new SimpleH2Column("name", H2DataTypes.VARCHAR, true, 1000);
+		SimpleH2Column settingValue = new SimpleH2Column("value", H2DataTypes.VARCHAR, true, 1000);
+		settings.addColumn(id, settingName, settingValue);
+
 		database.createSchema(schema);
 		database.createTable(product);
 		database.createTable(priceCheck);
 		database.createTable(list);
+		database.createTable(settings);
 	}
 
 	private SimpleH2Database createDatabase() {
@@ -237,6 +319,31 @@ public class Main extends Application {
 				String name = resultSet.getString("name");
 
 				list.add(new AmazonList(id, name));
+			}
+		} catch (SQLException e) {
+		}
+		selection.close();
+		return list;
+	}
+
+	public static ObservableList<Setting> getSettings(SimpleH2Database database) {
+
+		ObservableList<Setting> list = FXCollections.observableArrayList();
+
+		OperationBuilder selectionCriteria = new OperationBuilder("apc", "settings");
+		selectionCriteria.setSelection("settings", "id");
+		selectionCriteria.setSelection("settings", "name");
+		selectionCriteria.setSelection("settings", "value");
+
+		SimpleH2ResultSet selection = database.runSelection(selectionCriteria.buildSelection());
+		ResultSet resultSet = selection.getResultSet();
+		try {
+			while (resultSet.next()) {
+				int id = resultSet.getInt("id");
+				String name = resultSet.getString("name");
+				String value = resultSet.getString("value");
+
+				list.add(new Setting(id, name, value));
 			}
 		} catch (SQLException e) {
 		}
