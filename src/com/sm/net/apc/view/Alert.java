@@ -62,7 +62,7 @@ public class Alert {
 	public void openAmazon() {
 
 		String code = product.getCode().get();
-		String productUrl = Html.getAmazonProductSimpleUrl("de", code);
+		String productUrl = Html.getAmazonProductSimpleUrl(Main.ext.getValue().get(), code);
 
 		Desktop desktop = Desktop.getDesktop();
 		if (desktop.isSupported(Desktop.Action.BROWSE)) {

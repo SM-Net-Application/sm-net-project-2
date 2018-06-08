@@ -188,7 +188,7 @@ public class MainView implements TaskCheckPrice {
 			Stage stage = new Stage();
 			stage.setScene(scene);
 
-			stage.setTitle("Amazon PriceCheck 1.0");
+			stage.setTitle(Main.appName + " " + Main.version);
 			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
 			stage.initOwner(mainViewStage);
 			stage.initModality(Modality.WINDOW_MODAL);
@@ -209,18 +209,22 @@ public class MainView implements TaskCheckPrice {
 
 	public void buttonDeleteListOnClick() {
 
-		AmazonList list = listView.getSelectionModel().getSelectedItem();
-		if (list != null) {
-			Alert alert = new Alert(AlertType.CONFIRMATION);
-			alert.setTitle("Delete list");
-			alert.setHeaderText("Do you really want to delete it?");
-			alert.setContentText(list.getName().get());
+		if (listView.getSelectionModel().getSelectedIndex() > 0) {
+			AmazonList list = listView.getSelectionModel().getSelectedItem();
+			if (list != null) {
+				Alert alert = new Alert(AlertType.CONFIRMATION);
+				Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+				stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+				alert.setTitle(Main.appName + " " + Main.version);
+				alert.setTitle("Delete list");
+				alert.setHeaderText("Do you really want to delete it?");
+				alert.setContentText(list.getName().get());
 
-			Optional<ButtonType> result = alert.showAndWait();
-			if (result.get() == ButtonType.OK)
-				deleteList(list);
+				Optional<ButtonType> result = alert.showAndWait();
+				if (result.get() == ButtonType.OK)
+					deleteList(list);
+			}
 		}
-
 	}
 
 	private void deleteList(AmazonList list) {
@@ -242,7 +246,7 @@ public class MainView implements TaskCheckPrice {
 			Stage stage = new Stage();
 			stage.setScene(scene);
 
-			stage.setTitle("Amazon PriceCheck 1.0");
+			stage.setTitle(Main.appName + " " + Main.version);
 			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
 			stage.initOwner(mainViewStage);
 			stage.initModality(Modality.WINDOW_MODAL);
@@ -265,6 +269,9 @@ public class MainView implements TaskCheckPrice {
 		AmazonProduct product = tableViewProducts.getSelectionModel().getSelectedItem();
 		if (product != null) {
 			Alert alert = new Alert(AlertType.CONFIRMATION);
+			Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+			alert.setTitle(Main.appName + " " + Main.version);
 			alert.setTitle("Delete product");
 			alert.setHeaderText("Do you really want to delete it?");
 			alert.setContentText(product.getProductName().get());
@@ -285,7 +292,7 @@ public class MainView implements TaskCheckPrice {
 	public void buttonNewOnClick() {
 
 		Dialog<String> dialog = new Dialog<>();
-		dialog.setTitle("Amazon PriceCheck 1.0");
+		dialog.setTitle(Main.appName + " " + Main.version);
 		dialog.setHeaderText("List-Name:");
 
 		Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
@@ -461,8 +468,14 @@ public class MainView implements TaskCheckPrice {
 			String productCode = Html.getProductCodeFromUrl(link);
 			if (!productCode.isEmpty())
 				checkProduct(productCode);
-			else
-				new Alert(AlertType.INFORMATION, "Link is invalid", ButtonType.OK).show();
+			else {
+				Alert alert = new Alert(AlertType.INFORMATION, link, ButtonType.OK);
+				Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+				stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+				alert.setTitle(Main.appName + " " + Main.version);
+				alert.setHeaderText("Link is invalid");
+				alert.show();
+			}
 		}
 	}
 
@@ -476,7 +489,7 @@ public class MainView implements TaskCheckPrice {
 
 	private void checkProduct(String productCode) {
 
-		String productUrl = Html.getAmazonProductSimpleUrl("de", productCode);
+		String productUrl = Html.getAmazonProductSimpleUrl(Main.ext.getValue().get(), productCode);
 		String sourceCode = com.sm.net.util.Html.getSourceCode(productUrl);
 
 		if (!sourceCode.isEmpty()) {
@@ -504,8 +517,14 @@ public class MainView implements TaskCheckPrice {
 			List<Integer> indexes = addProduct(productCode, com.sm.net.util.Html.encodingForeignChars(productTitle),
 					imageUrl);
 			addPrice(indexes, price);
-		} else
-			new Alert(AlertType.INFORMATION, "Connection failed", ButtonType.OK).show();
+		} else {
+			Alert alert = new Alert(AlertType.ERROR, productUrl, ButtonType.OK);
+			Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+			alert.setTitle(Main.appName + " " + Main.version);
+			alert.setHeaderText("Connection failed");
+			alert.show();
+		}
 	}
 
 	private void addPrice(List<Integer> indexes, String price) {

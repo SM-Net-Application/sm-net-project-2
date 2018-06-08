@@ -5,6 +5,7 @@ import com.sm.net.simple.h2.SimpleH2Database;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -50,7 +51,9 @@ public class Settings {
 			stage.close();
 		} else {
 			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Amazon PriceCheck 1.0");
+			Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+			alert.setTitle(Main.appName + " " + Main.version);
 			alert.setHeaderText("Check all fields");
 			alert.setContentText(null);
 

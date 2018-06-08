@@ -41,6 +41,9 @@ public class Main extends Application {
 	public static Setting ext = null;
 	public static Setting min = null;
 
+	public static String appName = "Amazon PriceCheck";
+	public static String version = "1.0";
+
 	private ScheduledExecutorService executorService;
 
 	@Override
