@@ -115,8 +115,9 @@ public class MainView implements TaskCheckPrice {
 		setImageButtonListMinus();
 		setImageButtonProductMinus();
 		setImageButtonSettings();
-		setImageButtonStop();
-		setLabelCheck(1);
+		setImageButtonStart();
+		// setLabelCheck(1);
+		this.labelCheck.setText("Stopped...");
 
 		tableColumnImage.setCellValueFactory(cellData -> cellData.getValue().getImageUrl());
 		tableColumnName.setCellValueFactory(cellData -> cellData.getValue().getProductName());
@@ -460,6 +461,8 @@ public class MainView implements TaskCheckPrice {
 			String productCode = Html.getProductCodeFromUrl(link);
 			if (!productCode.isEmpty())
 				checkProduct(productCode);
+			else
+				new Alert(AlertType.INFORMATION, "Link is invalid", ButtonType.OK).show();
 		}
 	}
 
@@ -501,7 +504,8 @@ public class MainView implements TaskCheckPrice {
 			List<Integer> indexes = addProduct(productCode, com.sm.net.util.Html.encodingForeignChars(productTitle),
 					imageUrl);
 			addPrice(indexes, price);
-		}
+		} else
+			new Alert(AlertType.INFORMATION, "Connection failed", ButtonType.OK).show();
 	}
 
 	private void addPrice(List<Integer> indexes, String price) {
@@ -576,12 +580,14 @@ public class MainView implements TaskCheckPrice {
 	}
 
 	private void runService() {
-		this.executorService = Executors.newScheduledThreadPool(1);
-		executorService.scheduleAtFixedRate(checkPriceService, 1, new Integer(Main.min.getValue().get()).intValue(),
-				TimeUnit.MINUTES);
-		this.status = true;
-		setImageButtonStop();
-		setLabelCheck(1);
+		if (Main.getListProduct(database, -2).size() > 0) {
+			this.executorService = Executors.newScheduledThreadPool(1);
+			executorService.scheduleAtFixedRate(checkPriceService, 1, new Integer(Main.min.getValue().get()).intValue(),
+					TimeUnit.MINUTES);
+			this.status = true;
+			setImageButtonStop();
+			setLabelCheck(1);
+		}
 	}
 
 	private void shutdownService() {
