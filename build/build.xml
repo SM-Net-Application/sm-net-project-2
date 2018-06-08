@@ -116,7 +116,7 @@
 			<fx:fileset dir="dist" includes="resources/**" />
 		</fx:resources>
 
-		<fx:application id="fxApplication" name="Amazon PriceCheck" mainClass="com.sm.net.apc.Main" toolkit="fx" />
+		<fx:application id="fxApplication" name="AmazonPriceCheck" mainClass="com.sm.net.apc.Main" version="1.0" toolkit="fx" />
 
 		<mkdir dir="build/classes/META-INF" />
 
@@ -130,7 +130,7 @@
 
 			<manifest>
 				<attribute name="Implementation-Vendor" value="SM-Net" />
-				<attribute name="Implementation-Title" value="Amazon PriceCheck" />
+				<attribute name="Implementation-Title" value="AmazonPriceCheck" />
 				<attribute name="Implementation-Version" value="1.0" />
 				<attribute name="JavaFX-Feature-Proxy" value="None" />
 			</manifest>
