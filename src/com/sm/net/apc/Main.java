@@ -362,6 +362,15 @@ public class Main extends Application {
 		return new File(path);
 	}
 
+	public static String getImagePath(int id) {
+
+		String path = System.getProperty("user.dir") + File.separatorChar + "resources" + File.separatorChar + "fotos"
+				+ File.separatorChar;
+		path += id + ".png";
+
+		return path;
+	}
+
 	public static void main(String[] args) {
 		launch(args);
 	}

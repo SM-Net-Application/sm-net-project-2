@@ -1,6 +1,9 @@
 package com.sm.net.apc.model;
 
+import java.io.File;
 import java.math.BigDecimal;
+
+import com.sm.net.apc.Main;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -25,22 +28,30 @@ public class AmazonProduct {
 		this.id = new SimpleIntegerProperty(id);
 		this.code = new SimpleStringProperty(code);
 		this.productName = new SimpleStringProperty(productName);
-		this.imageUrl = new SimpleObjectProperty<ImageView>(getImageView(imageUrl));
+		this.imageUrl = new SimpleObjectProperty<ImageView>(getImageView(id, imageUrl));
 		this.idList = new SimpleIntegerProperty(idList);
 		this.priceAlert = new SimpleObjectProperty<BigDecimal>(priceAlert);
 	}
 
-	private ImageView getImageView(String imageUrl) {
+	private ImageView getImageView(int id, String imageUrl) {
 
-		Image image = new Image(imageUrl);
-		ImageView imageView = new ImageView(image);
-		imageView.setPreserveRatio(true);
-		if (image.getWidth() > image.getHeight())
-			imageView.setFitWidth(100);
-		else
-			imageView.setFitHeight(100);
+		String path = Main.getImagePath(id);
+		File imageFile = new File(path);
+		ImageView imageView = null;
 
-		return imageView;
+		if (imageFile.exists()) {
+			Image image = new Image(imageFile.toURI().toString());
+			imageView = new ImageView(image);
+			imageView.setPreserveRatio(true);
+			if (image.getWidth() > image.getHeight())
+				imageView.setFitWidth(100);
+			else
+				imageView.setFitHeight(100);
+
+			return imageView;
+		} else {
+			return new ImageView();
+		}
 	}
 
 	public IntegerProperty getId() {

@@ -1,8 +1,12 @@
 package com.sm.net.apc.view;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Date;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -13,6 +17,8 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import javax.imageio.ImageIO;
 
 import com.sm.net.amazon.util.Html;
 import com.sm.net.apc.Main;
@@ -564,6 +570,8 @@ public class MainView implements TaskCheckPrice {
 
 			List<Integer> indexes = database.runInsert(op.buildInsert());
 
+			saveImage(imageUrl, indexes);
+
 			textFieldLink.setText("");
 			loadListProduct();
 
@@ -571,6 +579,26 @@ public class MainView implements TaskCheckPrice {
 		}
 
 		return null;
+	}
+
+	private void saveImage(String imageUrl, List<Integer> indexes) {
+
+		if (!imageUrl.isEmpty() && indexes.size() > 0) {
+
+			for (Integer index : indexes) {
+				try {
+					BufferedImage bi = ImageIO.read(new URL(imageUrl));
+					String path = Main.getImagePath(index.intValue());
+					File saveImage = new File(path);
+					saveImage.mkdirs();
+					ImageIO.write(bi, "png", saveImage);
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	public void loadListProduct() {
