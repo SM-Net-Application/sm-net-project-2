@@ -469,6 +469,8 @@ public class MainView implements TaskCheckPrice {
 
 	public void buttonAddOnClick() {
 
+		Main.writeLog("buttonAddOnClick");
+
 		String link = textFieldLink.getText();
 		if (!link.isEmpty()) {
 			String productCode = Html.getProductCodeFromUrl(link);
@@ -495,10 +497,14 @@ public class MainView implements TaskCheckPrice {
 
 	private void checkProduct(String productCode) {
 
+		Main.writeLog("checkProduct " + productCode);
+
 		String productUrl = Html.getAmazonProductSimpleUrl(Main.ext.getValue().get(), productCode);
 		String sourceCode = com.sm.net.util.Html.getSourceCode(productUrl);
 
 		if (!sourceCode.isEmpty()) {
+
+			Main.writeLog("SourceCode not Empty ");
 
 			String productTitle = "";
 			String imageUrl = "";
@@ -551,6 +557,8 @@ public class MainView implements TaskCheckPrice {
 
 	private List<Integer> addProduct(String productCode, String productTitle, String imageUrl) {
 
+		Main.writeLog("Add Product " + productCode + " - " + productTitle + " - " + imageUrl);
+
 		if (!productCode.isEmpty() && !productTitle.isEmpty()) {
 
 			productTitle = productTitle.replace("'", "");
@@ -576,6 +584,8 @@ public class MainView implements TaskCheckPrice {
 			loadListProduct();
 
 			return indexes;
+		} else {
+			Main.writeLog("Product is empty");
 		}
 
 		return null;

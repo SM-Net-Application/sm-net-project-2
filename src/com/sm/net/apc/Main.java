@@ -1,10 +1,14 @@
 package com.sm.net.apc;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.sm.net.apc.model.AmazonList;
@@ -373,5 +377,24 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		launch(args);
+	}
+
+	public static void writeLog(String text) {
+
+		BufferedWriter writer = null;
+		try {
+			String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+			File logFile = new File("logAmazonPriceCheck.txt");
+
+			writer = new BufferedWriter(new FileWriter(logFile, true));
+			writer.write(timeLog + " - " + text.replace("\n", " ") + "\n");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				writer.close();
+			} catch (Exception e) {
+			}
+		}
 	}
 }
