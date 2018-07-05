@@ -381,10 +381,19 @@ public class Main extends Application {
 
 	public static void writeLog(String text) {
 
+		String logFolderStr = "log";
+		File logFolder = new File(logFolderStr);
+		logFolder.mkdirs();
+
+		logFolderStr += File.separatorChar;
+		logFolderStr += new SimpleDateFormat("yyyyMMdd").format(Calendar.getInstance().getTime());
+		logFolderStr += ".txt";
+
+		String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+
 		BufferedWriter writer = null;
 		try {
-			String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-			File logFile = new File("logAmazonPriceCheck.txt");
+			File logFile = new File(logFolderStr);
 
 			writer = new BufferedWriter(new FileWriter(logFile, true));
 			writer.write(timeLog + " - " + text.replace("\n", " ") + "\n");

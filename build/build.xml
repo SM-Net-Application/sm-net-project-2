@@ -122,6 +122,12 @@
 			</fileset>
 		</copy>
 
+		<copy todir="dist/resources">
+			<fileset dir="U:\git\sm-net-project-2\resources">
+				<include name="start.bat" />
+			</fileset>
+		</copy>
+
 		<copy todir="dist/resources/images">
 			<fileset dir="U:\git\sm-net-project-2\resources\images">
 				<include name="*" />

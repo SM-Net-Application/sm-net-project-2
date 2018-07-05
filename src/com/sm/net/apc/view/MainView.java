@@ -122,7 +122,6 @@ public class MainView implements TaskCheckPrice {
 		setImageButtonProductMinus();
 		setImageButtonSettings();
 		setImageButtonStart();
-		// setLabelCheck(1);
 		this.labelCheck.setText("Stopped...");
 
 		tableColumnImage.setCellValueFactory(cellData -> cellData.getValue().getImageUrl());
@@ -469,8 +468,6 @@ public class MainView implements TaskCheckPrice {
 
 	public void buttonAddOnClick() {
 
-		Main.writeLog("buttonAddOnClick");
-
 		String link = textFieldLink.getText();
 		if (!link.isEmpty()) {
 			String productCode = Html.getProductCodeFromUrl(link);
@@ -497,14 +494,10 @@ public class MainView implements TaskCheckPrice {
 
 	private void checkProduct(String productCode) {
 
-		Main.writeLog("checkProduct " + productCode);
-
 		String productUrl = Html.getAmazonProductSimpleUrl(Main.ext.getValue().get(), productCode);
 		String sourceCode = com.sm.net.util.Html.getSourceCode(productUrl);
 
 		if (!sourceCode.isEmpty()) {
-
-			Main.writeLog("SourceCode not Empty ");
 
 			String productTitle = "";
 			String imageUrl = "";
@@ -526,8 +519,8 @@ public class MainView implements TaskCheckPrice {
 				price = com.sm.net.util.Html.getSubsourceCode(sourceCode, Html.ourPriceStart,
 						com.sm.net.util.Html.tagSpanEnd);
 
-			List<Integer> indexes = addProduct(productCode, com.sm.net.util.Html.encodingForeignChars(productTitle),
-					imageUrl);
+			List<Integer> indexes = addProduct(sourceCode, productCode,
+					com.sm.net.util.Html.encodingForeignChars(productTitle), imageUrl);
 			addPrice(indexes, price);
 		} else {
 			Alert alert = new Alert(AlertType.ERROR, productUrl, ButtonType.OK);
@@ -555,9 +548,7 @@ public class MainView implements TaskCheckPrice {
 		}
 	}
 
-	private List<Integer> addProduct(String productCode, String productTitle, String imageUrl) {
-
-		Main.writeLog("Add Product " + productCode + " - " + productTitle + " - " + imageUrl);
+	private List<Integer> addProduct(String sourceCode, String productCode, String productTitle, String imageUrl) {
 
 		if (!productCode.isEmpty() && !productTitle.isEmpty()) {
 
@@ -585,7 +576,12 @@ public class MainView implements TaskCheckPrice {
 
 			return indexes;
 		} else {
-			Main.writeLog("Product is empty");
+			Alert alert = new Alert(AlertType.ERROR, productCode, ButtonType.OK);
+			Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+			alert.setTitle(Main.appName + " " + Main.version);
+			alert.setHeaderText("Product not recognized.\nBot Check has been activated by Amazon.");
+			alert.show();
 		}
 
 		return null;
