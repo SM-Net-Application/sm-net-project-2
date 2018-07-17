@@ -193,10 +193,13 @@ public class ProductEditor {
 			series.getData().add(new XYChart.Data<String, Number>(date, price));
 		}
 
-		double avr = summe.doubleValue() / listPrice.size();
-		BigDecimal average = BigDecimal.valueOf(avr).setScale(2, RoundingMode.HALF_UP);
+		if (!first) {
+			double avr = summe.doubleValue() / listPrice.size();
+			BigDecimal average = BigDecimal.valueOf(avr).setScale(2, RoundingMode.HALF_UP);
+			textFieldAverage.setText(average.toString());
+		} else
+			textFieldAverage.setText("0");
 
-		textFieldAverage.setText(average.toString());
 		textFieldLowest.setText(low.toString());
 		textFieldHigher.setText(high.toString());
 

@@ -269,7 +269,7 @@ public class Main extends Application {
 
 				BigDecimal price = BigDecimal.ZERO;
 				ObservableList<AmazonPrice> lastPrice = getLastPrice(database, new Integer(id));
-				if (lastPrice != null)
+				if (lastPrice != null && lastPrice.size() > 0)
 					price = lastPrice.get(0).getPrice().get();
 
 				list.add(new AmazonProduct(id, code, productName, imageUrl, idListRecord, priceAlert, price));
