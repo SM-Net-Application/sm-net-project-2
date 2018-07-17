@@ -46,7 +46,7 @@ public class Main extends Application {
 	public static Setting min = null;
 
 	public static String appName = "Amazon PriceCheck";
-	public static String version = "1.0";
+	public static String version = "1.1";
 
 	private ScheduledExecutorService executorService;
 
@@ -267,7 +267,12 @@ public class Main extends Application {
 				int idListRecord = resultSet.getInt("id_list");
 				BigDecimal priceAlert = resultSet.getBigDecimal("price_alert");
 
-				list.add(new AmazonProduct(id, code, productName, imageUrl, idListRecord, priceAlert));
+				BigDecimal price = BigDecimal.ZERO;
+				ObservableList<AmazonPrice> lastPrice = getLastPrice(database, new Integer(id));
+				if (lastPrice != null)
+					price = lastPrice.get(0).getPrice().get();
+
+				list.add(new AmazonProduct(id, code, productName, imageUrl, idListRecord, priceAlert, price));
 			}
 		} catch (SQLException e) {
 		}
@@ -290,6 +295,41 @@ public class Main extends Application {
 
 		SimpleH2ResultSet selection = database
 				.runSelection(selectionCriteria.buildSelection() + " ORDER BY creation_date DESC, id DESC");
+		ResultSet resultSet = selection.getResultSet();
+		try {
+			while (resultSet.next()) {
+				int id = resultSet.getInt("id");
+				Date creationData = resultSet.getDate("creation_date");
+				BigDecimal price = resultSet.getBigDecimal("price");
+				BigDecimal priceOld = resultSet.getBigDecimal("price_old");
+				int idProduct2 = resultSet.getInt("id_product");
+				int status = resultSet.getInt("status");
+
+				AmazonPrice amazonPrice = new AmazonPrice(id, creationData, price, priceOld, idProduct2, status);
+
+				list.add(amazonPrice);
+			}
+		} catch (SQLException e) {
+		}
+		selection.close();
+		return list;
+	}
+
+	public static ObservableList<AmazonPrice> getLastPrice(SimpleH2Database database, Integer idProduct) {
+
+		ObservableList<AmazonPrice> list = FXCollections.observableArrayList();
+
+		OperationBuilder selectionCriteria = new OperationBuilder("apc", "price_check");
+		selectionCriteria.setSelection("price_check", "id");
+		selectionCriteria.setSelection("price_check", "creation_date");
+		selectionCriteria.setSelection("price_check", "price");
+		selectionCriteria.setSelection("price_check", "price_old");
+		selectionCriteria.setSelection("price_check", "id_product");
+		selectionCriteria.setSelection("price_check", "status");
+		selectionCriteria.setConditionEquals("id_product", idProduct);
+
+		SimpleH2ResultSet selection = database
+				.runSelection(selectionCriteria.buildSelection() + " ORDER BY creation_date DESC, id DESC LIMIT 1");
 		ResultSet resultSet = selection.getResultSet();
 		try {
 			while (resultSet.next()) {

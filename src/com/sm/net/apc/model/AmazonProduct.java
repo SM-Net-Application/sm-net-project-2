@@ -22,8 +22,10 @@ public class AmazonProduct {
 	private ObjectProperty<ImageView> imageUrl;
 	private IntegerProperty idList;
 	private ObjectProperty<BigDecimal> priceAlert;
+	private ObjectProperty<BigDecimal> price;
 
-	public AmazonProduct(int id, String code, String productName, String imageUrl, int idList, BigDecimal priceAlert) {
+	public AmazonProduct(int id, String code, String productName, String imageUrl, int idList, BigDecimal priceAlert,
+			BigDecimal price) {
 		super();
 		this.id = new SimpleIntegerProperty(id);
 		this.code = new SimpleStringProperty(code);
@@ -31,6 +33,7 @@ public class AmazonProduct {
 		this.imageUrl = new SimpleObjectProperty<ImageView>(getImageView(id, imageUrl));
 		this.idList = new SimpleIntegerProperty(idList);
 		this.priceAlert = new SimpleObjectProperty<BigDecimal>(priceAlert);
+		this.price = new SimpleObjectProperty<BigDecimal>(price);
 	}
 
 	private ImageView getImageView(int id, String imageUrl) {
@@ -105,6 +108,14 @@ public class AmazonProduct {
 
 	public void setPriceAlert(ObjectProperty<BigDecimal> priceAlert) {
 		this.priceAlert = priceAlert;
+	}
+
+	public ObjectProperty<BigDecimal> getPrice() {
+		return price;
+	}
+
+	public void setPrice(ObjectProperty<BigDecimal> price) {
+		this.price = price;
 	}
 
 }

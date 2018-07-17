@@ -71,6 +71,8 @@ public class MainView implements TaskCheckPrice {
 	private TableColumn<AmazonProduct, ImageView> tableColumnImage;
 	@FXML
 	private TableColumn<AmazonProduct, String> tableColumnName;
+	@FXML
+	private TableColumn<AmazonProduct, BigDecimal> tableColumnPrice;
 
 	@FXML
 	private TableView<AmazonPrice> tableViewPrice;
@@ -126,6 +128,7 @@ public class MainView implements TaskCheckPrice {
 
 		tableColumnImage.setCellValueFactory(cellData -> cellData.getValue().getImageUrl());
 		tableColumnName.setCellValueFactory(cellData -> cellData.getValue().getProductName());
+		tableColumnPrice.setCellValueFactory(cellData -> cellData.getValue().getPrice());
 
 		tableColumnPriceImage.setCellValueFactory(cellData -> cellData.getValue().getImageViewStatus());
 		tableColumnPriceValue.setCellValueFactory(cellData -> cellData.getValue().getPrice());
@@ -134,6 +137,7 @@ public class MainView implements TaskCheckPrice {
 
 		tableColumnImage.setStyle("-fx-alignment: center; -fx-font: 15px System;");
 		tableColumnName.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+		tableColumnPrice.setStyle("-fx-alignment: center; -fx-font: 15px System;");
 
 		tableColumnPriceImage.setStyle("-fx-alignment: center; -fx-font: 15px System;");
 		tableColumnPriceValue.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
@@ -202,7 +206,10 @@ public class MainView implements TaskCheckPrice {
 			Settings controller = (Settings) fxmlLoader.getController();
 			controller.setStage(stage);
 			controller.setDatabase(database);
-			controller.setProductSize(tableViewProducts.getItems().size());
+
+			ObservableList<AmazonProduct> listProduct = Main.getListProduct(this.database, -1);
+
+			controller.setProductSize(listProduct.size());
 			controller.init();
 
 			stage.show();
@@ -255,6 +262,7 @@ public class MainView implements TaskCheckPrice {
 			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
 			stage.initOwner(mainViewStage);
 			stage.initModality(Modality.WINDOW_MODAL);
+			stage.setResizable(false);
 
 			ProductEditor controller = (ProductEditor) fxmlLoader.getController();
 			controller.setDatabase(database);
@@ -678,6 +686,7 @@ public class MainView implements TaskCheckPrice {
 	public void stopCheck() {
 		setLabelCheck(new Integer(Main.min.getValue().get()));
 		this.progressBar.setProgress(0);
+		loadListProduct();
 	}
 
 	@Override
@@ -691,9 +700,9 @@ public class MainView implements TaskCheckPrice {
 			Scene scene = new Scene((AnchorPane) fxmlLoader.load());
 			Stage stage = new Stage();
 			stage.setScene(scene);
-
 			stage.setTitle("Price alarm");
 			stage.getIcons().add(new Image(Main.ICON.toURI().toString()));
+			stage.setResizable(false);
 
 			com.sm.net.apc.view.Alert controller = (com.sm.net.apc.view.Alert) fxmlLoader.getController();
 			controller.setDatabase(database);

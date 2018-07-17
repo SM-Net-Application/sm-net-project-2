@@ -1,9 +1,16 @@
 package com.sm.net.apc.view;
 
+import java.awt.Desktop;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.net.URI;
+import java.net.URISyntaxException;
 
+import com.sm.net.amazon.util.Html;
 import com.sm.net.apc.Main;
 import com.sm.net.apc.model.AmazonList;
+import com.sm.net.apc.model.AmazonPrice;
 import com.sm.net.apc.model.AmazonProduct;
 import com.sm.net.simple.h2.OperationBuilder;
 import com.sm.net.simple.h2.SimpleH2Database;
@@ -12,6 +19,12 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Series;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
@@ -28,6 +41,16 @@ public class ProductEditor {
 	private ComboBox<AmazonList> comboBoxList;
 	@FXML
 	private TextField textFieldAlert;
+	@FXML
+	private TextField textFieldAverage;
+	@FXML
+	private Button buttonOpenAmazon;
+	@FXML
+	private LineChart<String, Number> lineChart;
+	@FXML
+	private CategoryAxis xAxis;
+	@FXML
+	private NumberAxis yAxis;
 
 	private SimpleH2Database database;
 	private AmazonProduct product;
@@ -43,6 +66,7 @@ public class ProductEditor {
 		this.textFieldName.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.comboBoxList.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.textFieldAlert.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+		this.textFieldAverage.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 
 		this.textFieldName.focusedProperty().addListener(new ChangeListener<Boolean>() {
 
@@ -119,6 +143,39 @@ public class ProductEditor {
 		this.comboBoxList.setItems(list);
 
 		loadProduct();
+		loadChart();
+
+	}
+
+	private void loadChart() {
+
+		lineChart.getData().clear();
+
+		xAxis.setLabel("Date");
+		yAxis.setLabel("Price");
+
+		Series<String, Number> series = new XYChart.Series<>();
+		series.setName(product.getCode().get());
+
+		ObservableList<AmazonPrice> listPrice = Main.getListPrice(database, product.getId().get());
+
+		BigDecimal summe = BigDecimal.ZERO;
+
+		for (AmazonPrice amazonPrice : listPrice) {
+			String date = amazonPrice.getCreationDate().get().toString();
+			BigDecimal price = amazonPrice.getPrice().get();
+
+			summe = summe.add(price);
+
+			series.getData().add(new XYChart.Data<String, Number>(date, price));
+		}
+
+		double avr = summe.doubleValue() / listPrice.size();
+		BigDecimal average = BigDecimal.valueOf(avr).setScale(2, RoundingMode.HALF_UP);
+
+		textFieldAverage.setText(average.toString());
+
+		lineChart.getData().add(series);
 	}
 
 	private void loadProduct() {
@@ -137,6 +194,23 @@ public class ProductEditor {
 				this.comboBoxList.getSelectionModel().select(amazonList);
 				break;
 			}
+		}
+	}
+
+	public void buttonOpenAmazonOnClick() {
+
+		String code = product.getCode().get();
+		String productUrl = Html.getAmazonProductSimpleUrl(Main.ext.getValue().get(), code);
+
+		Desktop desktop = Desktop.getDesktop();
+		if (desktop.isSupported(Desktop.Action.BROWSE)) {
+			try {
+				desktop.browse(new URI(productUrl));
+			} catch (IOException | URISyntaxException exc) {
+				// ...
+			}
+		} else {
+			// ...
 		}
 	}
 
