@@ -93,7 +93,7 @@ public class Main extends Application {
 			// scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 
-			primaryStage.setTitle("Amazon PriceCheck 1.0");
+			primaryStage.setTitle(appName + " " + version);
 			primaryStage.getIcons().add(new Image(ICON.toURI().toString()));
 			primaryStage.setMaximized(true);
 
