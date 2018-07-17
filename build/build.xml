@@ -164,7 +164,7 @@
 		<fx:deploy verbose="true" embedJNLP="false" extension="false" includeDT="false" offlineAllowed="true" outdir="${basedir}/deploy" outfile="sm-net-project-2" nativeBundles="exe" updatemode="background">
 
 			<fx:platform basedir="C:\Program Files\Java\jdk1.8.0_172" />
-			<fx:info title="sm-net-project-2" vendor="SM-Net" />
+			<fx:info title="Amazon PriceCheck" vendor="SM-Net" />
 
 			<fx:application refId="fxApplication" />
 			<fx:resources refid="appRes" />

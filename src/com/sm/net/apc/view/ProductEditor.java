@@ -173,6 +173,7 @@ public class ProductEditor {
 		BigDecimal low = BigDecimal.ZERO;
 		BigDecimal high = BigDecimal.ZERO;
 
+		boolean first = true;
 		for (AmazonPrice amazonPrice : listPrice) {
 
 			String date = amazonPrice.getCreationDate().get().toString();
@@ -180,7 +181,10 @@ public class ProductEditor {
 
 			summe = summe.add(price);
 
-			if (price.compareTo(low) == -1)
+			if (first) {
+				low = price;
+				first = false;
+			} else if (price.compareTo(low) == -1)
 				low = price;
 
 			if (price.compareTo(high) == 1)

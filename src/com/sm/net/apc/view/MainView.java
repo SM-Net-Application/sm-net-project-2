@@ -207,7 +207,7 @@ public class MainView implements TaskCheckPrice {
 			controller.setStage(stage);
 			controller.setDatabase(database);
 
-			ObservableList<AmazonProduct> listProduct = Main.getListProduct(this.database, -1);
+			ObservableList<AmazonProduct> listProduct = Main.getListProduct(this.database, -2);
 
 			controller.setProductSize(listProduct.size());
 			controller.init();
