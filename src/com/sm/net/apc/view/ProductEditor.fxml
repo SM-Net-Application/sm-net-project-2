@@ -132,6 +132,36 @@
                               </TextField>
                            </children>
                         </HBox>
+                        <HBox layoutX="10.0" layoutY="220.0">
+                           <children>
+                              <Label maxHeight="25.0" minWidth="75.0" text="Lowest">
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </HBox.margin>
+                              </Label>
+                              <TextField fx:id="textFieldLowest" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                 <HBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </HBox.margin>
+                              </TextField>
+                              <Label maxHeight="1.7976931348623157E308" minWidth="75.0" text="Higher">
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </HBox.margin>
+                              </Label>
+                              <TextField fx:id="textFieldHigher" maxWidth="1.7976931348623157E308">
+                                 <HBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </HBox.margin>
+                              </TextField>
+                           </children>
+                        </HBox>
                      </children>
                   </VBox>
                </children>

@@ -44,6 +44,10 @@ public class ProductEditor {
 	@FXML
 	private TextField textFieldAverage;
 	@FXML
+	private TextField textFieldLowest;
+	@FXML
+	private TextField textFieldHigher;
+	@FXML
 	private Button buttonOpenAmazon;
 	@FXML
 	private LineChart<String, Number> lineChart;
@@ -67,6 +71,12 @@ public class ProductEditor {
 		this.comboBoxList.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.textFieldAlert.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.textFieldAverage.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+		this.textFieldLowest.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+		this.textFieldHigher.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+
+		this.textFieldAverage.setEditable(false);
+		this.textFieldLowest.setEditable(false);
+		this.textFieldHigher.setEditable(false);
 
 		this.textFieldName.focusedProperty().addListener(new ChangeListener<Boolean>() {
 
@@ -160,12 +170,21 @@ public class ProductEditor {
 		ObservableList<AmazonPrice> listPrice = Main.getListPrice(database, product.getId().get());
 
 		BigDecimal summe = BigDecimal.ZERO;
+		BigDecimal low = BigDecimal.ZERO;
+		BigDecimal high = BigDecimal.ZERO;
 
 		for (AmazonPrice amazonPrice : listPrice) {
+
 			String date = amazonPrice.getCreationDate().get().toString();
 			BigDecimal price = amazonPrice.getPrice().get();
 
 			summe = summe.add(price);
+
+			if (price.compareTo(low) == -1)
+				low = price;
+
+			if (price.compareTo(high) == 1)
+				high = price;
 
 			series.getData().add(new XYChart.Data<String, Number>(date, price));
 		}
@@ -174,6 +193,8 @@ public class ProductEditor {
 		BigDecimal average = BigDecimal.valueOf(avr).setScale(2, RoundingMode.HALF_UP);
 
 		textFieldAverage.setText(average.toString());
+		textFieldLowest.setText(low.toString());
+		textFieldHigher.setText(high.toString());
 
 		lineChart.getData().add(series);
 	}
