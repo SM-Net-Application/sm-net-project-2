@@ -183,7 +183,7 @@ public class MainView implements TaskCheckPrice {
 		loadListProduct();
 
 		checkPriceService = new CheckPrice(database, this);
-		runService();
+		runService(true);
 	}
 
 	public void buttonSettingsOnClick() {
@@ -497,7 +497,7 @@ public class MainView implements TaskCheckPrice {
 		if (status)
 			shutdownService();
 		else
-			runService();
+			runService(true);
 	}
 
 	private void checkProduct(String productCode) {
@@ -626,28 +626,31 @@ public class MainView implements TaskCheckPrice {
 
 	private void updateTime(int size) {
 
-		Integer atLeastTime = new Integer(size * 2);
+		Integer atLeastTime = new Integer(size * Settings.minPerProd);
 		String minString = Main.min.getValue().get();
 		if (atLeastTime.compareTo(new Integer(minString)) == 1) {
 			String ext = Main.ext.getValue().get();
 			Main.updateSettings(database, ext, atLeastTime.toString());
-			reloadService();
+			reloadService(false);
 		}
 	}
 
-	private void reloadService() {
+	private void reloadService(boolean firstStart) {
 		shutdownService();
-		runService();
+		runService(firstStart);
 	}
 
-	private void runService() {
+	private void runService(boolean firstStart) {
 		if (Main.getListProduct(database, -2).size() > 0) {
 			this.executorService = Executors.newScheduledThreadPool(1);
 			executorService.scheduleAtFixedRate(checkPriceService, 1, new Integer(Main.min.getValue().get()).intValue(),
 					TimeUnit.MINUTES);
 			this.status = true;
 			setImageButtonStop();
-			setLabelCheck(1);
+			if (firstStart)
+				setLabelCheck(1);
+			else
+				setLabelCheck(new Integer(Main.min.getValue().get()));
 		}
 	}
 

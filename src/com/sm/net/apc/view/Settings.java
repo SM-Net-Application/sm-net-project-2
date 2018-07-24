@@ -30,6 +30,8 @@ public class Settings {
 	private Integer productSize;
 	private Integer time;
 
+	public static final int minPerProd = 1;
+
 	public void initialize() {
 
 	}
@@ -38,7 +40,7 @@ public class Settings {
 		textFieldExtension.setText(Main.ext.getValue().get());
 		textFieldMinutes.setText(Main.min.getValue().get());
 
-		time = new Integer(productSize.intValue() * 2);
+		time = new Integer(productSize.intValue() * minPerProd);
 
 		labelProducts.setText(productSize.toString() + " Products");
 		labelTime.setText("At least " + time.toString() + " minutes");

@@ -46,7 +46,7 @@ public class Main extends Application {
 	public static Setting min = null;
 
 	public static String appName = "Amazon PriceCheck";
-	public static String version = "1.1";
+	public static String version = "1.2";
 
 	private ScheduledExecutorService executorService;
 
@@ -90,7 +90,6 @@ public class Main extends Application {
 			fxmlLoader.setLocation(Main.class.getResource("view/MainView.fxml"));
 
 			Scene scene = new Scene((AnchorPane) fxmlLoader.load());
-			// scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 
 			primaryStage.setTitle(appName + " " + version);
