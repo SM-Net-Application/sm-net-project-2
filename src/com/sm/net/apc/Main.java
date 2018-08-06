@@ -46,7 +46,7 @@ public class Main extends Application {
 	public static Setting min = null;
 
 	public static String appName = "Amazon PriceCheck";
-	public static String version = "1.2";
+	public static String version = "1.3";
 
 	private ScheduledExecutorService executorService;
 
@@ -200,7 +200,8 @@ public class Main extends Application {
 		SimpleH2Column imageUrl = new SimpleH2Column("image_url", H2DataTypes.VARCHAR, true, 1000);
 		SimpleH2Column idList = new SimpleH2Column("id_list", H2DataTypes.INT, true);
 		SimpleH2Column priceAlert = new SimpleH2Column("price_alert", H2DataTypes.DECIMAL, true);
-		product.addColumn(id, code, productName, imageUrl, idList, priceAlert);
+		SimpleH2Column lastCheck = new SimpleH2Column("last_check", H2DataTypes.DATE, true);
+		product.addColumn(id, code, productName, imageUrl, idList, priceAlert, lastCheck);
 
 		SimpleH2Table priceCheck = new SimpleH2Table("price_check", schema, true);
 		SimpleH2Column creationDate = new SimpleH2Column("creation_date", H2DataTypes.DATE, true);
@@ -251,11 +252,15 @@ public class Main extends Application {
 		selectionCriteria.setSelection("product", "image_url");
 		selectionCriteria.setSelection("product", "id_list");
 		selectionCriteria.setSelection("product", "price_alert");
+		selectionCriteria.setSelection("product", "last_check");
 
-		if (idList.intValue() > -2)
+		SimpleH2ResultSet selection = null;
+		if (idList.intValue() > -2) {
 			selectionCriteria.setConditionEquals("id_list", idList);
+			selection = database.runSelection(selectionCriteria.buildSelection());
+		} else
+			selection = database.runSelection(selectionCriteria.buildSelection() + " ORDER BY product.last_check ASC");
 
-		SimpleH2ResultSet selection = database.runSelection(selectionCriteria.buildSelection());
 		ResultSet resultSet = selection.getResultSet();
 		try {
 			while (resultSet.next()) {
@@ -265,13 +270,18 @@ public class Main extends Application {
 				String imageUrl = resultSet.getString("image_url");
 				int idListRecord = resultSet.getInt("id_list");
 				BigDecimal priceAlert = resultSet.getBigDecimal("price_alert");
+				Date lastCheck = resultSet.getDate("last_check");
+				Date lastUpdate = Date.valueOf("1900-01-01");
 
 				BigDecimal price = BigDecimal.ZERO;
 				ObservableList<AmazonPrice> lastPrice = getLastPrice(database, new Integer(id));
-				if (lastPrice != null && lastPrice.size() > 0)
+				if (lastPrice != null && lastPrice.size() > 0) {
 					price = lastPrice.get(0).getPrice().get();
+					lastUpdate = lastPrice.get(0).getCreationDate().get();
+				}
 
-				list.add(new AmazonProduct(id, code, productName, imageUrl, idListRecord, priceAlert, price));
+				list.add(new AmazonProduct(id, code, productName, imageUrl, idListRecord, priceAlert, price, lastCheck,
+						lastUpdate));
 			}
 		} catch (SQLException e) {
 		}

@@ -42,6 +42,8 @@ public class ProductEditor {
 	@FXML
 	private TextField textFieldAlert;
 	@FXML
+	private TextField textFieldActPrice;
+	@FXML
 	private TextField textFieldAverage;
 	@FXML
 	private TextField textFieldLowest;
@@ -70,10 +72,12 @@ public class ProductEditor {
 		this.textFieldName.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.comboBoxList.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.textFieldAlert.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+		this.textFieldActPrice.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.textFieldAverage.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.textFieldLowest.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 		this.textFieldHigher.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
 
+		this.textFieldActPrice.setEditable(false);
 		this.textFieldAverage.setEditable(false);
 		this.textFieldLowest.setEditable(false);
 		this.textFieldHigher.setEditable(false);
@@ -200,6 +204,7 @@ public class ProductEditor {
 		} else
 			textFieldAverage.setText("0");
 
+		textFieldActPrice.setText(product.getPrice().get().toString());
 		textFieldLowest.setText(low.toString());
 		textFieldHigher.setText(high.toString());
 

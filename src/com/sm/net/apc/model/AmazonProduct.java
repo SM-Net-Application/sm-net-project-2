@@ -2,6 +2,7 @@ package com.sm.net.apc.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.Date;
 
 import com.sm.net.apc.Main;
 
@@ -23,9 +24,11 @@ public class AmazonProduct {
 	private IntegerProperty idList;
 	private ObjectProperty<BigDecimal> priceAlert;
 	private ObjectProperty<BigDecimal> price;
+	private StringProperty lastCheck;
+	private StringProperty lastUpdate;
 
 	public AmazonProduct(int id, String code, String productName, String imageUrl, int idList, BigDecimal priceAlert,
-			BigDecimal price) {
+			BigDecimal price, Date lastCheck, Date lastUpdate) {
 		super();
 		this.id = new SimpleIntegerProperty(id);
 		this.code = new SimpleStringProperty(code);
@@ -34,6 +37,28 @@ public class AmazonProduct {
 		this.idList = new SimpleIntegerProperty(idList);
 		this.priceAlert = new SimpleObjectProperty<BigDecimal>(priceAlert);
 		this.price = new SimpleObjectProperty<BigDecimal>(price);
+		this.lastCheck = setLastCheck(lastCheck);
+		this.lastUpdate = setLastUpdate(lastUpdate);
+	}
+
+	private StringProperty setLastUpdate(Date lastUpdate) {
+
+		String result = "Unknow";
+
+		if (lastUpdate.after(Date.valueOf("1900-01-01")))
+			result = lastUpdate.toString();
+
+		return new SimpleStringProperty(result);
+	}
+
+	private StringProperty setLastCheck(Date lastCheck) {
+
+		String result = "Failed";
+
+		if (lastCheck.after(Date.valueOf("1900-01-01")))
+			result = lastCheck.toString();
+
+		return new SimpleStringProperty(result);
 	}
 
 	private ImageView getImageView(int id, String imageUrl) {
@@ -116,6 +141,22 @@ public class AmazonProduct {
 
 	public void setPrice(ObjectProperty<BigDecimal> price) {
 		this.price = price;
+	}
+
+	public StringProperty getLastCheck() {
+		return lastCheck;
+	}
+
+	public void setLastCheck(StringProperty lastCheck) {
+		this.lastCheck = lastCheck;
+	}
+
+	public StringProperty getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(StringProperty lastUpdate) {
+		this.lastUpdate = lastUpdate;
 	}
 
 }

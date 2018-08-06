@@ -98,6 +98,8 @@
 											<columns>
 												<TableColumn fx:id="tableColumnImage" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" text="Foto" />
 												<TableColumn fx:id="tableColumnName" prefWidth="75.0" text="Product" />
+                                    <TableColumn fx:id="tableColumnLastCheck" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" resizable="false" text="Last check" />
+                                    <TableColumn fx:id="tableColumnLastUpdate" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" resizable="false" text="Last update" />
                                     <TableColumn fx:id="tableColumnPrice" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" resizable="false" text="Price" />
 											</columns>
 											<VBox.margin>

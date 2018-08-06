@@ -84,7 +84,7 @@ public class CheckPrice implements Runnable {
 	private void checkPrice(AmazonProduct amazonProduct) {
 
 		String code = amazonProduct.getCode().get();
-		String productUrl = Html.getAmazonProductSimpleUrl("de", code);
+		String productUrl = Html.getAmazonProductSimpleUrl(Main.ext.getValue().get(), code);
 
 		String sourceCode = com.sm.net.util.Html.getSourceCode(productUrl);
 
@@ -101,7 +101,20 @@ public class CheckPrice implements Runnable {
 
 			if (!price.isEmpty())
 				addPrice(amazonProduct, price.replaceAll(",", "."));
-		}
+			else
+				setFailed(amazonProduct);
+		} else
+			setFailed(amazonProduct);
+	}
+
+	private void setFailed(AmazonProduct amazonProduct) {
+
+		OperationBuilder ob = new OperationBuilder("apc", "product");
+		ob.setColumnValue("last_check", Date.valueOf("1900-01-01"));
+		ob.setConditionEquals("id", amazonProduct.getId().get());
+
+		database.runOperation(ob.buildUpdate());
+
 	}
 
 	private void addPrice(AmazonProduct product, String price) {

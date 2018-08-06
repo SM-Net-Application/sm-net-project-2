@@ -72,6 +72,10 @@ public class MainView implements TaskCheckPrice {
 	@FXML
 	private TableColumn<AmazonProduct, String> tableColumnName;
 	@FXML
+	private TableColumn<AmazonProduct, String> tableColumnLastCheck;
+	@FXML
+	private TableColumn<AmazonProduct, String> tableColumnLastUpdate;
+	@FXML
 	private TableColumn<AmazonProduct, BigDecimal> tableColumnPrice;
 
 	@FXML
@@ -128,6 +132,8 @@ public class MainView implements TaskCheckPrice {
 
 		tableColumnImage.setCellValueFactory(cellData -> cellData.getValue().getImageUrl());
 		tableColumnName.setCellValueFactory(cellData -> cellData.getValue().getProductName());
+		tableColumnLastCheck.setCellValueFactory(cellData -> cellData.getValue().getLastCheck());
+		tableColumnLastUpdate.setCellValueFactory(cellData -> cellData.getValue().getLastUpdate());
 		tableColumnPrice.setCellValueFactory(cellData -> cellData.getValue().getPrice());
 
 		tableColumnPriceImage.setCellValueFactory(cellData -> cellData.getValue().getImageViewStatus());
@@ -137,6 +143,8 @@ public class MainView implements TaskCheckPrice {
 
 		tableColumnImage.setStyle("-fx-alignment: center; -fx-font: 15px System;");
 		tableColumnName.setStyle("-fx-alignment: center-left; -fx-font: 15px System;");
+		tableColumnLastCheck.setStyle("-fx-alignment: center; -fx-font: 15px System;");
+		tableColumnLastUpdate.setStyle("-fx-alignment: center; -fx-font: 15px System;");
 		tableColumnPrice.setStyle("-fx-alignment: center; -fx-font: 15px System;");
 
 		tableColumnPriceImage.setStyle("-fx-alignment: center; -fx-font: 15px System;");
@@ -552,6 +560,7 @@ public class MainView implements TaskCheckPrice {
 				op.setColumnValue("status", PriceStatus.DETECTED.getId());
 
 				database.runOperation(op.buildInsert());
+				loadListProduct();
 			}
 		}
 	}
@@ -569,6 +578,7 @@ public class MainView implements TaskCheckPrice {
 			op.setColumnValue("product_name", productTitle);
 			op.setColumnValue("id_list", list.getId().get());
 			op.setColumnValue("price_alert", BigDecimal.ZERO);
+			op.setColumnValue("last_check", Instant.now());
 
 			if (imageUrl.isEmpty())
 				op.setColumnValue("image_url", "");
@@ -580,7 +590,6 @@ public class MainView implements TaskCheckPrice {
 			saveImage(imageUrl, indexes);
 
 			textFieldLink.setText("");
-			loadListProduct();
 
 			return indexes;
 		} else {
