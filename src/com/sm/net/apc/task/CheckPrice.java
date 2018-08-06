@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 
 import com.sm.net.amazon.util.Html;
@@ -99,22 +102,32 @@ public class CheckPrice implements Runnable {
 				price = com.sm.net.util.Html.getSubsourceCode(sourceCode, Html.ourPriceStart,
 						com.sm.net.util.Html.tagSpanEnd);
 
-			if (!price.isEmpty())
+			if (!price.isEmpty()) {
 				addPrice(amazonProduct, price.replaceAll(",", "."));
-			else
+				System.out.println("Product Record-ID " + amazonProduct.getId().get() + " --> OK");
+			} else {
+				if (sourceCode.contains("Bot Check"))
+					System.out.println("Product Record-ID " + amazonProduct.getId().get() + " --> Bot Check");
 				setFailed(amazonProduct);
+			}
 		} else
 			setFailed(amazonProduct);
 	}
 
 	private void setFailed(AmazonProduct amazonProduct) {
 
-		OperationBuilder ob = new OperationBuilder("apc", "product");
-		ob.setColumnValue("last_check", Date.valueOf("1900-01-01"));
-		ob.setConditionEquals("id", amazonProduct.getId().get());
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		try {
 
-		database.runOperation(ob.buildUpdate());
+			OperationBuilder ob = new OperationBuilder("apc", "product");
+			ob.setColumnValue("last_check", df.parse("1900-01-01"));
+			ob.setConditionEquals("id", amazonProduct.getId().get());
 
+			database.runOperation(ob.buildUpdate());
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void addPrice(AmazonProduct product, String price) {
