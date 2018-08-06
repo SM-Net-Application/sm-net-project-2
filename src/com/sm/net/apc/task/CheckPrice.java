@@ -102,10 +102,9 @@ public class CheckPrice implements Runnable {
 				price = com.sm.net.util.Html.getSubsourceCode(sourceCode, Html.ourPriceStart,
 						com.sm.net.util.Html.tagSpanEnd);
 
-			if (!price.isEmpty()) {
+			if (!price.isEmpty())
 				addPrice(amazonProduct, price.replaceAll(",", "."));
-				System.out.println("Product Record-ID " + amazonProduct.getId().get() + " --> OK");
-			} else {
+			else {
 				if (sourceCode.contains("Bot Check"))
 					System.out.println("Product Record-ID " + amazonProduct.getId().get() + " --> Bot Check");
 				setFailed(amazonProduct);
@@ -131,6 +130,8 @@ public class CheckPrice implements Runnable {
 	}
 
 	private void addPrice(AmazonProduct product, String price) {
+
+		setLastCheck(product);
 
 		int id = product.getId().get();
 
@@ -163,8 +164,6 @@ public class CheckPrice implements Runnable {
 		op.setColumnValue("status", priceStatus.getId());
 
 		database.runOperation(op.buildInsert());
-
-		setLastCheck(amazonProduct);
 
 		if (!(newPrice.compareTo(alertPrice) > 0)) {
 			Platform.runLater(new Runnable() {
