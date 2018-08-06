@@ -151,6 +151,8 @@ public class CheckPrice implements Runnable {
 
 		database.runOperation(op.buildInsert());
 
+		setLastCheck(amazonProduct);
+
 		if (!(newPrice.compareTo(alertPrice) > 0)) {
 			Platform.runLater(new Runnable() {
 
@@ -160,6 +162,15 @@ public class CheckPrice implements Runnable {
 				}
 			});
 		}
+	}
+
+	private void setLastCheck(AmazonProduct amazonProduct) {
+
+		OperationBuilder ob = new OperationBuilder("apc", "product");
+		ob.setColumnValue("last_check", Instant.now());
+		ob.setConditionEquals("id", amazonProduct.getId().get());
+
+		database.runOperation(ob.buildUpdate());
 	}
 
 	private int isDifferentPrice(Integer id, String price) {
